@@ -1,0 +1,41 @@
+{
+  "orders": [
+    {
+      "id": "ord_000101",
+      "customerId": "cus_001",
+      "customerTier": "retail",
+      "lines": [{ "sku": "BOX-A", "quantity": 1, "unitPrice": 10000 }],
+      "shippingMethod": "standard",
+      "countryCode": "GB"
+    },
+    {
+      "id": "ord_000102",
+      "customerId": "cus_002",
+      "customerTier": "retail",
+      "lines": [{ "sku": "BOX-A", "quantity": 1, "unitPrice": 10000 }],
+      "discountPercent": 10,
+      "shippingMethod": "standard",
+      "countryCode": "GB"
+    },
+    {
+      "id": "ord_000103",
+      "customerId": "cus_003",
+      "customerTier": "wholesale",
+      "lines": [{ "sku": "PALLET-1", "quantity": 6, "unitPrice": 100000 }],
+      "discountPercent": 10,
+      "shippingMethod": "express",
+      "countryCode": "GB"
+    },
+    {
+      "id": "ord_000104",
+      "customerId": "cus_004",
+      "customerTier": "retail",
+      "lines": [
+        { "sku": "BOX-B", "quantity": 3, "unitPrice": 3333 },
+        { "sku": "TAPE-1", "quantity": 2, "unitPrice": 499 }
+      ],
+      "shippingMethod": "express",
+      "countryCode": "DE"
+    }
+  ]
+}

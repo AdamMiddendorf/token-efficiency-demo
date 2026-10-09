@@ -1,0 +1,26 @@
+{
+  "name": "parcel-pilot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Order pricing and fulfilment service (workshop repository)",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "verify:task-1": "vitest run --config vitest.verify.config.ts verify/task-1.verify.test.ts",
+    "verify:task-2": "vitest run --config vitest.verify.config.ts verify/task-2.verify.test.ts",
+    "verify:task-3": "vitest run --config vitest.verify.config.ts verify/task-3.verify.test.ts",
+    "verify:task-4": "vitest run --config vitest.verify.config.ts verify/task-4.verify.test.ts",
+    "verify:all": "vitest run --config vitest.verify.config.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@types/node": "^22.9.0",
+    "eslint": "^9.14.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0",
+    "vitest": "^2.1.4"
+  }
+}

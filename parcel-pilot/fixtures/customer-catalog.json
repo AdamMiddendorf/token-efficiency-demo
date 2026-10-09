@@ -1,0 +1,9 @@
+{
+  "customers": [
+    { "id": "cus_001", "name": "Dana Okoro", "email": "dana@example.test", "tier": "retail", "countryCode": "GB" },
+    { "id": "cus_002", "name": "Kit Laurent", "email": "kit@example.test", "tier": "retail", "countryCode": "GB" },
+    { "id": "cus_003", "name": "Northfield Supplies", "email": "ap@northfield.example", "tier": "wholesale", "countryCode": "GB" },
+    { "id": "cus_004", "name": "Mira Halvorsen", "email": "mira@example.test", "tier": "retail", "countryCode": "DE" },
+    { "id": "cus_005", "name": "Harbour Trade Co", "email": "orders@harbourtrade.example", "tier": "wholesale", "countryCode": "IE" }
+  ]
+}
