@@ -256,7 +256,7 @@ section("Theory 1 - Context");
     ["Prompts, and how many were corrections", "Corrections mean the first prompt left something out"],
     ["Full vs. focused test runs", "A full suite log sits in context for the rest of the chat"],
     ["Files changed that didn't need to", "Rework and review cost"],
-    ["Context % at the end", "Claude Code: /context · Cursor CLI: context % status line"],
+    ["Peak context", "/context or the status line · Cursor: context % status line"],
     ["Hidden verification passed?", "Correctness - the cost that actually hurts"],
   ];
   s.addTable(rows, { x: 0.7, y: 1.85, w: 7.4, colW: [3.3, 4.1], fontSize: 14, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.56, valign: "middle", margin: [0.04, 0.12, 0.04, 0.12], objectName: "score table" });
@@ -709,21 +709,23 @@ section("Close");
   const rows = [
     [{ text: "Metric", options: { bold: true, color: WHITE, fill: { color: PURPLE } } }, hdr("Vibe", SLATE), hdr("Disciplined", TEAL)],
     // Rehearsal: race.mjs, Sonnet, 13 Oct 2026 (results/race-2026-10-13T23-07-58.md).
-    [b("Tasks that passed hidden verification"), v("2 / 3"), v("3 / 3")],
-    [b("Tokens processed"), v("907k"), v("729k")],
-    [b("Peak context"), v("60.0k"), v("51.3k")],
-    [b("Cost"), v("$0.90"), v("$0.60")],
+    // The six slide-7 scorecard measures (correctness first), then cost.
+    [b("Hidden verification passed"), v("2 / 3"), v("3 / 3")],
+    [b("Files read / files that mattered"), v("7 / 7"), v("9 / 8")],
+    [b("Prompts (corrections)"), v("3 (0)"), v("3 (0)")],
     [b("Full / focused test runs"), v("5 / 0"), v("0 / 3")],
-    [b("Files read · relevant ratio"), v("7 · 100%"), v("9 · 89%")],
+    [b("Files changed that didn't need to"), v("1"), v("1")],
+    [b("Peak context"), v("60.0k"), v("51.3k")],
+    [b("Cost · tokens processed"), v("$0.90 · 907k"), v("$0.60 · 729k")],
     [b("Agent minutes"), v("2.2"), v("1.7")],
   ];
-  s.addTable(rows, { x: 0.7, y: 1.85, w: 8.2, colW: [4.2, 2.0, 2.0], fontSize: 15, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.56, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "results table" });
+  s.addTable(rows, { x: 0.7, y: 1.85, w: 8.2, colW: [4.2, 2.0, 2.0], fontSize: 14, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.5, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "results table" });
   panel(s, 9.2, 1.85, 3.4, 4.5);
   glyph(s, 9.5, 2.1, 0.5, TEAL, "✓");
   text(s, "Read correctness first", { x: 9.5, y: 2.75, w: 2.85, h: 0.75, fontSize: 18, bold: true, color: PURPLE });
   text(s, "A lane that is cheaper but wrong lost. A lane that is right and cheaper won twice.", { x: 9.5, y: 3.55, w: 2.85, h: 1.6, fontSize: 15, color: SLATE });
   text(s, "The fix was one line either way. The rest was the cost of not saying what we knew.", { x: 9.5, y: 5.05, w: 2.85, h: 1.2, fontSize: 15, bold: true });
-  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: correctness first, then tokens and context, then files. The numbers on this slide are from a rehearsal run - the fallback if the live race hasn't finished; say so if you use them. The failed vibe task is free shipping: 'over £100' became '> 10000' and express went free too. Then cost and context: a third more spend for a worse result. Files read is a wash on this repo - good docs keep both lanes on the right files - so don't oversell it.");
+  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: they are slide 7's six scorecard measures, correctness first, then cost. The numbers on this slide are from a rehearsal run - the fallback if the live race hasn't finished; say so if you use them. The failed vibe task is free shipping: 'over £100' became '> 10000' and express went free too. Then cost and context: a third more spend for a worse result. Files read is a wash on this repo - good docs keep both lanes on the right files - so don't oversell it.");
 }
 
 // 21 — checklist

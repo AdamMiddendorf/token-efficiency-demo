@@ -346,8 +346,10 @@ Hand-off: *"New goal — notifications. Eugene, fresh context."*
 also in `demo-kit/results/`). If it's not finished, use slide 23's rehearsal
 numbers and say so.*
 
-Adam reads it top-down: **correctness** first (tasks passing hidden verification),
-then tokens, peak context and cost, then files read and unrelated changes.
+Adam reads it top-down. The first block is slide 7's six scorecard measures, with
+**correctness** first (tasks passing hidden verification); then the cost block
+(tokens, dollars, minutes). Point back to slide 7: "these are the numbers we told
+you we'd count."
 
 > "Same model, same repo, same three tasks. The fix was one line either way —
 > everything else was the cost of not saying what we knew."

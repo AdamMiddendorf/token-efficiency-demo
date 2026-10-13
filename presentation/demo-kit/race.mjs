@@ -191,23 +191,34 @@ const fmt = {
   pct: (a, b) => (b ? `${Math.round((100 * a) / b)}%` : "-"),
 };
 
+// Rows are slide 7's six scorecard measures (same labels, correctness first), then the costs from slide 6,
+// then diagnostics. Correctness leads because that's how slide 23 is read.
 function scoreboard(v, d) {
+  const passed = (x) => `${Object.values(x.verified).filter(Boolean).length} / ${Object.keys(x.verified).length}`;
+  // The race sends one prompt per task, so anything beyond that would be a correction.
+  const prompts = (x) => `${x.prompts} (${Math.max(0, x.prompts - Object.keys(x.verified).length)})`;
+  const task = (t) => (x) => (x.verified[t] ? "PASS" : "FAIL");
+  const both = (f) => [f(v), f(d)];
   const rows = [
-    ["Prompts sent", v.prompts, d.prompts],
-    ["Agent minutes", fmt.min(v.durationMs), fmt.min(d.durationMs)],
-    ["Cost (USD)", fmt.usd(v.costUsd), fmt.usd(d.costUsd)],
-    ["Tokens processed", fmt.k(v.tokensProcessed), fmt.k(d.tokensProcessed)],
-    ["Peak context (tokens)", fmt.k(v.peakContext), fmt.k(d.peakContext)],
+    ["**Scorecard (slide 7)**", "", ""],
+    ["Hidden verification passed", ...both(passed)],
+    ["...task 1 (tax bug)", ...both(task("1"))],
+    ["...task 3 (free shipping)", ...both(task("3"))],
+    ["...task 4 (retry limit)", ...both(task("4"))],
+    ["Files read / files that mattered", ...both((x) => `${x.filesRead.length} / ${x.relevantRead} (${fmt.pct(x.relevantRead, x.filesRead.length)})`)],
+    ["Prompts (corrections)", ...both(prompts)],
+    ["Full / focused test runs", ...both((x) => `${x.fullTestRuns} / ${x.focusedTestRuns}`)],
+    ["Files changed that didn't need to", ...both((x) => x.unrelatedChanged.length)],
+    ["Peak context (tokens)", ...both((x) => fmt.k(x.peakContext))],
+    ["**Cost (slide 6)**", "", ""],
+    ["Tokens processed", ...both((x) => fmt.k(x.tokensProcessed))],
+    ["Cost (USD)", ...both((x) => fmt.usd(x.costUsd))],
+    ["Agent minutes", ...both((x) => fmt.min(x.durationMs))],
+    ["**Diagnostics**", "", ""],
     ["Agent turns", v.turns, d.turns],
-    ["Files read", v.filesRead.length, d.filesRead.length],
-    ["...relevant ratio (target >= 70%)", fmt.pct(v.relevantRead, v.filesRead.length), fmt.pct(d.relevantRead, d.filesRead.length)],
     ["Searches (Grep/Glob)", v.searches, d.searches],
-    ["Full / focused test runs", `${v.fullTestRuns} / ${v.focusedTestRuns}`, `${d.fullTestRuns} / ${d.focusedTestRuns}`],
-    ["Opened archive/ or big fixture", v.touchedArchiveOrFixture ? "yes" : "no", d.touchedArchiveOrFixture ? "yes" : "no"],
-    ["Files changed (unrelated)", `${v.changed.length} (${v.unrelatedChanged.length})`, `${d.changed.length} (${d.unrelatedChanged.length})`],
-    ["Task 1 verified (tax)", v.verified["1"] ? "PASS" : "FAIL", d.verified["1"] ? "PASS" : "FAIL"],
-    ["Task 3 verified (free shipping)", v.verified["3"] ? "PASS" : "FAIL", d.verified["3"] ? "PASS" : "FAIL"],
-    ["Task 4 verified (retries)", v.verified["4"] ? "PASS" : "FAIL", d.verified["4"] ? "PASS" : "FAIL"],
+    ["Opened archive/ or big fixture", ...both((x) => (x.touchedArchiveOrFixture ? "yes" : "no"))],
+    ["Files changed in total", ...both((x) => x.changed.length)],
   ];
   const lines = ["| Metric | Vibe | Disciplined |", "|---|---:|---:|", ...rows.map((r) => `| ${r.join(" | ")} |`)];
   lines.push("", `Model: ${MODEL}. Unrelated files changed - vibe: ${v.unrelatedChanged.join(", ") || "none"}; disciplined: ${d.unrelatedChanged.join(", ") || "none"}.`);
