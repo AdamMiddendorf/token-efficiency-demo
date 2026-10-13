@@ -211,7 +211,7 @@ section("Theory 1 - Context");
     text(s, unit.toUpperCase(), { x: x + 0.25, y: 3.1, w: 2.4, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: MUTED });
     text(s, label, { x: x + 0.25, y: 3.5, w: 2.4, h: 0.9, fontSize: 15, color: SLATE });
   });
-  text(s, "The repository is booby-trapped like a real one", { x: 0.7, y: 4.85, w: 11.9, h: 0.4, fontSize: 18, bold: true });
+  text(s, "Like any real codebase, some files look more relevant than they are", { x: 0.7, y: 4.85, w: 11.9, h: 0.4, fontSize: 18, bold: true });
   text(s, bullets([
     "archive/ holds retired pricing code that looks current - and is never compiled or tested",
     "tax-calculator.ts is the obvious suspect for a tax bug; the bug is somewhere else",
