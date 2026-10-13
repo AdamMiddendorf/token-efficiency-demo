@@ -12,7 +12,7 @@ if (!dirArg) {
   process.exit(1);
 }
 const dir = resolve(dirArg);
-const tasks = taskArgs.length ? taskArgs : ["1", "3", "4"];
+const tasks = taskArgs.length ? taskArgs : ["1", "2", "3", "4"];
 
 for (const t of tasks) console.log(`Task ${t}: ${verifyTask(dir, t) ? "PASS" : "FAIL"}`);
 const files = changedFiles(dir);

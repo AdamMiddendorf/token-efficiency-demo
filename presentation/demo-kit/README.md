@@ -13,10 +13,16 @@ Requires Node 20+, git, and the `claude` CLI signed in. Run `npm install` in
 | `claude-rule-example/notifications.md` | The path-scoped rule Eugene saves to `.claude/rules/` at the end of Demo 3, if typing it live is too slow. |
 | `results/` | Created by `race.mjs`: one `.md` scoreboard and one `.json` per run. |
 
-The race and the demos use tasks 1 (tax bug), 3 (free shipping) and 4 (retry
-limit) from `parcel-pilot/workshop/tasks`. Task 3 is the one that separates the
-lanes: "free on orders over £100" is a normal ticket, and it hides two rules a
-vague prompt never states (exactly £100 qualifies; express is never free).
+The demos use tasks 1 (tax bug), 3 (free shipping) and 4 (retry limit) from
+`parcel-pilot/workshop/tasks`; the race adds task 2 (wholesale discount cap) so the
+vibe chat carries four tickets. Task 3 is the one that separates the lanes on
+correctness: "free on orders over £100" is a normal ticket, and it hides two rules
+a vague prompt never states (exactly £100 qualifies; express is never free).
+
+After the four tickets, the race runs a **QA round**: each lane's failing hidden
+checks come back to it once as a QA report (same wording for both), and it is
+scored again. The scoreboard shows first-try and after-QA results; the rework shows
+up as corrections, cost and minutes. A full race costs roughly $1.50–$2.50.
 
 ## Why the demo copies are separate
 

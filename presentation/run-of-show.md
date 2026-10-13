@@ -14,7 +14,7 @@
 
 We teach by contrast, around two themes: **planning keeps an agent on target**
 and **managing context keeps it cheap**. Before saying anything, we start a
-**race**: two headless Claude Code agents get the same three tickets in the same
+**race**: two headless Claude Code agents get the same four tickets in the same
 repo, same model. One gets vibe prompts in one long chat; the other gets the
 disciplined loop. Then we alternate **theory → demo** three times, each demo
 showing the idea we just explained, live, with the room keeping score. At minute
@@ -128,7 +128,7 @@ in *italics*.
 terminal) and says "race is running".*
 
 > "Before we explain anything: we've just started two Claude Code agents on the
-> same three tickets in the same repo. Same model. One gets the prompts we all
+> same four tickets in the same repo. Same model. One gets the prompts we all
 > write at 4pm on a Thursday — one chat, one-liners. The other gets the habits
 > we're about to teach. We won't look at it again until the end."
 
@@ -173,7 +173,7 @@ Hand-off: *"Eugene — let's vibe."*
    - "It ran the whole suite, not the one test file. Fine at 120 tests; expensive at 12,000."
    - Expect the tax fix to be right. Say so: "Good docs and a failing test did our
      job for us. Remember that for Theory 3."
-3. *(0:11)* In the **same chat**, paste **vibe-2**:
+3. *(0:11)* In the **same chat**, paste **vibe-3**:
    `Also, make shipping free on orders over £100.`
    Adam: "That's a real ticket. Anyone see a problem with it?" Take one answer, move on.
 4. *(0:13)* When it finishes, **Eugene runs the hidden check**:
@@ -347,11 +347,22 @@ also in `demo-kit/results/`). If it's not finished, use slide 23's rehearsal
 numbers and say so.*
 
 Adam reads it top-down. The first block is slide 7's six scorecard measures, with
-**correctness** first (tasks passing hidden verification); then the cost block
-(tokens, dollars, minutes). Point back to slide 7: "these are the numbers we told
-you we'd count."
+**correctness** first; then the cost block (tokens, dollars, minutes), which
+includes rework. Point back to slide 7: "these are the numbers we told you we'd
+count."
 
-> "Same model, same repo, same three tasks. The fix was one line either way —
+1. **First try.** "Four tickets each. On the first try, vibe shipped a bug."
+2. **The QA round.** "Then QA did what QA does: it sent back the failing checks.
+   Same report, same wording, to both lanes. Disciplined had nothing to fix. Vibe
+   needed a correction — in the same long chat, so it re-paid for everything in
+   there." Point at **Prompts (corrections)** and the cost block.
+3. **Cost.** Read the dollars and peak context as "including the rework".
+4. **Files read — own it.** "This one's even. This repo has good docs, so both
+   lanes found the right files. That's Theory 3 working, not a win for vibe.
+   Reading few files isn't the goal; vibe read few and still missed the rule
+   that mattered."
+
+> "Same model, same repo, same four tasks. The fix was one line either way —
 > everything else was the cost of not saying what we knew."
 
 *Slide 24 — checklist (Eugene, 1 min).* Ask two people for one habit they'll try tomorrow.

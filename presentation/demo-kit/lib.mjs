@@ -1,6 +1,7 @@
 // Shared helpers for stage.mjs, verify.mjs and race.mjs.
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -38,12 +39,38 @@ export function stageCopy(dest) {
 
 /** Copy verify/ in, run one task's verification, remove it again. */
 export function verifyTask(dir, task) {
+  return verifyDetails(dir, task).ok;
+}
+
+/**
+ * Like verifyTask, but also returns the titles of the checks that failed, so they
+ * can be read back to an agent as a QA report. The JSON report goes to the temp
+ * folder, not the demo copy, so it never shows up as a changed file.
+ */
+export function verifyDetails(dir, task) {
   const target = join(dir, "verify");
+  const report = join(tmpdir(), `parcel-pilot-verify-${process.pid}-${task}.json`);
   cpSync(join(REPO_DIR, "verify"), target, { recursive: true });
   try {
-    return sh(`npm run verify:task-${task}`, dir).ok;
+    const { ok } = sh(
+      `npx vitest run --config vitest.verify.config.ts verify/task-${task}.verify.test.ts`
+        + ` --reporter=json --outputFile="${report}"`,
+      dir,
+    );
+    let failed = [];
+    if (existsSync(report)) {
+      const json = JSON.parse(readFileSync(report, "utf8"));
+      failed = json.testResults
+        .flatMap((file) => file.assertionResults)
+        .filter((a) => a.status !== "passed")
+        .map((a) => a.title);
+    }
+    // A failed run with no failing assertions (e.g. a compile error) still counts as a failure.
+    if (!ok && !failed.length) failed = ["the verification suite did not run (build or type error)"];
+    return { ok, failed };
   } finally {
     rmSync(target, { recursive: true, force: true });
+    rmSync(report, { force: true });
   }
 }
 

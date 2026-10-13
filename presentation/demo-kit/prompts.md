@@ -13,19 +13,25 @@ it is attached rather than searched for.
 ## The vibe lane (Demo 1, and the vibe side of the race)
 
 One conversation for everything. No file names, no constraints, no verification
-command. This is how most of us actually prompt on a busy day.
+command. This is how most of us actually prompt on a busy day. Prompt numbers match
+the task numbers. Demo 1 uses vibe-1 then vibe-3; the race sends 1, 3, 2, 4 in one chat.
 
 <!-- prompt:vibe-1 -->
 ```text
 An order with a percentage discount is charged too much tax. Fix the bug and make the tests pass.
 ```
 
-<!-- prompt:vibe-2 -->
+<!-- prompt:vibe-3 -->
 ```text
 Also, make shipping free on orders over £100.
 ```
 
-<!-- prompt:vibe-3 -->
+<!-- prompt:vibe-2 -->
+```text
+Also, wholesale customers shouldn't get more than £500 off. Add that.
+```
+
+<!-- prompt:vibe-4 -->
 ```text
 Notifications retry too many times. Make it only retry twice.
 ```
@@ -93,6 +99,28 @@ Run `/context`, then `/clear`, then `/context` again (the drop is the point), th
 Implement plans/free-shipping.md. Stay inside its file list and don't-touch list. Run its verification commands and report only what changed and the test results.
 ```
 
+### Task 2 — wholesale discount cap (race only)
+
+Not demoed live; the race runs it so the vibe chat carries a fourth ticket.
+
+<!-- prompt:disciplined-2 -->
+```text
+Goal: cap the percentage discount for WHOLESALE customers at £500 (50000 minor units). Retail behaviour must not change.
+
+Acceptance:
+- retail, calculated discount £600 -> applied £600 (retail is NOT capped)
+- wholesale £400 -> £400; wholesale £500 -> £500; wholesale £600 -> £500
+
+Context: src/pricing/apply-discount.ts, src/pricing/pricing-policy.ts, tests/pricing/wholesale-discount.test.ts.
+The limit is money, not a percentage - so it does not belong in src/promotions/ (see docs/decisions/004-promotions-are-not-pricing.md if unsure).
+
+Constraints: the cap value lives in PricingPolicy - no 50000 literal scattered across files. Integer minor units, no floats. No changes under src/promotions/ or src/api/. Do not refactor the pricing pipeline. Do not weaken existing tests; add cases below, at and above the cap.
+
+Plan first, at most 10 lines, with these headings: Goal, Change (files), Don't touch, Approach (where the tier condition goes), Tests, Verify, Open questions. Then stop for my review.
+
+Verify: npm test -- tests/pricing/wholesale-discount.test.ts, then npm run typecheck.
+```
+
 ### Task 4 — notification retries (Demo 3 · fresh session, plan mode)
 
 Claude Code: `/clear`, then **Shift+Tab** until the footer shows *plan mode*. Type `@` and
@@ -135,4 +163,25 @@ Focused compaction in Claude Code (if you want to show it):
 
 ```text
 /compact keep only the retry-limit decision, the files changed and the test results
+```
+
+---
+
+## The QA round (race only)
+
+After the four tickets, `race.mjs` runs the hidden checks. Any lane with a failing
+check gets one QA report, the same wording for both lanes, built from the names of
+the checks that failed, then is scored again. The vibe lane gets it in its existing
+chat; the disciplined lane in a fresh one, matching each lane's habit. A lane that
+passed everything gets no report. This is the rework that slide 6 calls the cost
+that hurts most: it shows up as corrections, extra tokens, cost and minutes.
+
+The report looks like this (built by `race.mjs`, not read from this file):
+
+```text
+QA found these acceptance checks failing:
+- Free shipping: makes standard shipping free exactly at the threshold
+- Free shipping: never makes express shipping free
+
+Fix them without breaking anything else, then run the relevant tests.
 ```

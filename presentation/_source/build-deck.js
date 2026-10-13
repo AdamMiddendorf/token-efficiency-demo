@@ -113,9 +113,9 @@ section("Open");
   const s = slide("CONTENT");
   chip(s, "OPEN · ADAM");
   s.addText("Two agents started racing when we said hello", { placeholder: "title" });
-  s.addText("Same repository, same model, same three tasks. Only the way we prompt them differs.", { placeholder: "subtitle" });
+  s.addText("Same repository, same model, same four tasks. Only the way we prompt them differs.", { placeholder: "subtitle" });
   const lanes = [
-    { y: 1.9, color: SLATE, g: "~", name: "Vibe lane", how: "One conversation · three one-line prompts · no files, no constraints, no test command" },
+    { y: 1.9, color: SLATE, g: "~", name: "Vibe lane", how: "One conversation · four one-line prompts · no files, no constraints, no test command" },
     { y: 3.65, color: TEAL, g: "✓", name: "Disciplined lane", how: "Fresh conversation per task · six-part prompts · plan first · narrowest test, then verify" },
   ];
   for (const l of lanes) {
@@ -123,14 +123,15 @@ section("Open");
     glyph(s, 0.95, l.y + 0.25, 0.5, l.color, l.g);
     text(s, l.name, { x: 1.65, y: l.y + 0.22, w: 4.2, h: 0.4, fontSize: 18, bold: true, color: l.color });
     text(s, l.how, { x: 1.65, y: l.y + 0.68, w: 4.4, h: 0.7, fontSize: 14, color: SLATE });
-    ["1  Tax bug", "3  Free shipping", "4  Retry limit"].forEach((t, i) => {
-      const x = 6.3 + i * 2.1;
-      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: l.y + 0.45, w: 1.9, h: 0.6, rectRadius: 0.08, fill: { color: WHITE }, line: { color: l.color, width: 1.25 }, objectName: "task chip" });
-      text(s, t, { x, y: l.y + 0.45, w: 1.9, h: 0.6, fontSize: 14, bold: true, color: INK, align: "center", valign: "middle" });
+    // Tickets in the order the race sends them.
+    ["Tax bug", "Free shipping", "Discount cap", "Retry limit"].forEach((t, i) => {
+      const x = 6.2 + i * 1.6;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: l.y + 0.45, w: 1.45, h: 0.6, rectRadius: 0.08, fill: { color: WHITE }, line: { color: l.color, width: 1.25 }, objectName: "task chip" });
+      text(s, t, { x, y: l.y + 0.45, w: 1.45, h: 0.6, fontSize: 13, bold: true, color: INK, align: "center", valign: "middle" });
     });
   }
-  note(s, "We will not look at it again until minute 54. Then we read the scoreboard together.", 5.6, 0.7);
-  s.addNotes("ADAM. [Eugene starts `node race.mjs` on the second screen/terminal NOW if not already running.] Before we explain anything, we've started two Claude Code agents on the same three tickets in this repo. One gets prompts the way we all write them at 4pm on a Thursday. The other gets the habits we're about to teach. Same model. We'll come back at the end and see who finished, who was right, and what it cost.");
+  note(s, "Then a QA round: any failed check goes back to that lane once, like a real QA ticket. We read the scoreboard at minute 54.", 5.6, 0.7);
+  s.addNotes("ADAM. [Eugene starts `node race.mjs` on the second screen/terminal NOW if not already running.] Before we explain anything, we've started two Claude Code agents on the same four tickets in this repo. One gets prompts the way we all write them at 4pm on a Thursday. The other gets the habits we're about to teach. Same model. When both finish, QA checks the work and sends any failures back once - same report to both - because in real life a wrong answer comes back to you. We'll come back at the end and see who was right, and what it cost including the rework.");
 }
 
 // 3 — agenda
@@ -702,30 +703,32 @@ section("Close");
   const s = slide("CONTENT");
   chip(s, "RESULTS · BOTH");
   s.addText("The race results", { placeholder: "title" });
-  s.addText("Same model, same repo, same three tasks. Live numbers from the race terminal; rehearsal numbers below.", { placeholder: "subtitle" });
+  s.addText("Same model, same repo, same four tasks, then one QA round. Live numbers from the race terminal; rehearsal numbers below.", { placeholder: "subtitle" });
   const hdr = (t, c) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: c }, align: "center" } });
   const b = (t) => ({ text: t, options: { bold: true } });
   const v = (t) => ({ text: t, options: { align: "center" } });
   const rows = [
     [{ text: "Metric", options: { bold: true, color: WHITE, fill: { color: PURPLE } } }, hdr("Vibe", SLATE), hdr("Disciplined", TEAL)],
-    // Rehearsal: race.mjs, Sonnet, 13 Oct 2026 (results/race-2026-10-13T23-07-58.md).
-    // The six slide-7 scorecard measures (correctness first), then cost.
-    [b("Hidden verification passed"), v("2 / 3"), v("3 / 3")],
-    [b("Files read / files that mattered"), v("7 / 7"), v("9 / 8")],
-    [b("Prompts (corrections)"), v("3 (0)"), v("3 (0)")],
-    [b("Full / focused test runs"), v("5 / 0"), v("0 / 3")],
-    [b("Files changed that didn't need to"), v("1"), v("1")],
-    [b("Peak context"), v("60.0k"), v("51.3k")],
-    [b("Cost · tokens processed"), v("$0.90 · 907k"), v("$0.60 · 729k")],
-    [b("Agent minutes"), v("2.2"), v("1.7")],
+    // Rehearsal: race.mjs, Sonnet, 13 Oct 2026 (results/race-2026-10-13T23-58-45.md).
+    // The six slide-7 scorecard measures (correctness first), then cost including rework.
+    [b("Hidden verification passed, first try"), v("3 / 4"), v("4 / 4")],
+    [b("...after one QA round"), v("4 / 4"), v("4 / 4")],
+    [b("Files read / files that mattered"), v("9 / 9"), v("11 / 10")],
+    [b("Prompts (corrections)"), v("5 (1)"), v("4 (0)")],
+    [b("Full / focused test runs"), v("5 / 1"), v("0 / 4")],
+    [b("Files changed that didn't need to"), v("0"), v("0")],
+    [b("Peak context"), v("68.7k"), v("49.2k")],
+    [b("Cost, incl. rework"), v("$1.50"), v("$0.72")],
+    [b("Agent minutes"), v("3.0"), v("2.1")],
   ];
-  s.addTable(rows, { x: 0.7, y: 1.85, w: 8.2, colW: [4.2, 2.0, 2.0], fontSize: 14, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.5, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "results table" });
+  s.addTable(rows, { x: 0.7, y: 1.85, w: 8.2, colW: [4.2, 2.0, 2.0], fontSize: 14, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.46, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "results table" });
+  text(s, "Files read is even: good docs kept both lanes on the right files (Theory 3).", { x: 0.7, y: 6.5, w: 8.2, h: 0.3, fontSize: 12, italic: true, color: MUTED });
   panel(s, 9.2, 1.85, 3.4, 4.5);
   glyph(s, 9.5, 2.1, 0.5, TEAL, "✓");
   text(s, "Read correctness first", { x: 9.5, y: 2.75, w: 2.85, h: 0.75, fontSize: 18, bold: true, color: PURPLE });
   text(s, "A lane that is cheaper but wrong lost. A lane that is right and cheaper won twice.", { x: 9.5, y: 3.55, w: 2.85, h: 1.6, fontSize: 15, color: SLATE });
   text(s, "The fix was one line either way. The rest was the cost of not saying what we knew.", { x: 9.5, y: 5.05, w: 2.85, h: 1.2, fontSize: 15, bold: true });
-  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: they are slide 7's six scorecard measures, correctness first, then cost. The numbers on this slide are from a rehearsal run - the fallback if the live race hasn't finished; say so if you use them. The failed vibe task is free shipping: 'over £100' became '> 10000' and express went free too. Then cost and context: a third more spend for a worse result. Files read is a wash on this repo - good docs keep both lanes on the right files - so don't oversell it.");
+  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: they are slide 7's six scorecard measures, correctness first, then cost. The numbers on this slide are from a rehearsal run - the fallback if the live race hasn't finished; say so if you use them. The failed vibe task is free shipping: 'over £100' became '> 10000' and express went free too. Then the QA round: the same failing-check report goes to both lanes; disciplined had nothing to fix, vibe needed a correction in its already-long chat. That rework is in the cost: about twice the spend and 40% more peak context for the same four tickets. Files read is even - good docs kept both lanes on the right files, which is Theory 3 working. Own it; it makes the rest credible.");
 }
 
 // 21 — checklist

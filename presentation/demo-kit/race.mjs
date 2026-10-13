@@ -1,7 +1,11 @@
-// The race: the same three tasks, run headless through Claude Code twice, in parallel.
+// The race: the same four tasks, run headless through Claude Code twice, in parallel.
 //
-//   vibe         one conversation, three vague prompts (vibe-1..3 in prompts.md)
-//   disciplined  a fresh conversation per task, six-part prompts (disciplined-1, -3, -4)
+//   vibe         one conversation, four vague prompts (vibe-1, -3, -2, -4 in prompts.md)
+//   disciplined  a fresh conversation per task, six-part prompts (disciplined-1, -3, -2, -4)
+//
+// Then a QA round: each lane's hidden-check failures come back to it once as a QA report
+// (same wording for both lanes; vibe in its existing chat, disciplined in a fresh one),
+// and it is scored again. That rework is counted as corrections, cost and minutes.
 //
 //   node race.mjs [--model sonnet] [--max-turns 40] [--root <dir>] [--config-dir <dir>] [--dry-run]
 //
@@ -17,7 +21,7 @@ import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from
 import { spawn } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
 import { basename, join, relative, resolve } from "node:path";
-import { KIT_DIR, changedFiles, stageCopy, verifyTask } from "./lib.mjs";
+import { KIT_DIR, changedFiles, stageCopy, verifyDetails } from "./lib.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => {
@@ -35,21 +39,30 @@ const ROOT_ARG = resolve(opt("root", join(tmpdir(), "parcel-pilot-race")));
 mkdirSync(ROOT_ARG, { recursive: true });
 const ROOT = realpathSync.native(ROOT_ARG);
 
-// Files that genuinely help with tasks 1, 3 and 4 (plus the cheap routing docs).
+// Race tasks in the order they are sent, and the names QA uses for them.
+const TASKS = ["1", "3", "2", "4"];
+const TASK_NAMES = { 1: "Discounted-order tax", 2: "Wholesale discount cap", 3: "Free shipping", 4: "Notification retries" };
+
+// Files that genuinely help with tasks 1-4 (plus the cheap routing docs).
 const RELEVANT = new Set([
   "CLAUDE.md", "AGENTS.md", "docs/architecture.md",
   "docs/decisions/002-pricing-operation-order.md",
   "docs/decisions/003-notification-retries.md",
+  "docs/decisions/004-promotions-are-not-pricing.md",
   "src/pricing/calculate-order-total.ts", "tests/pricing/calculate-order-total.test.ts",
   "src/pricing/shipping-price.ts", "src/pricing/pricing-policy.ts",
   "tests/pricing/shipping-price.test.ts",
+  "src/pricing/apply-discount.ts", "tests/pricing/wholesale-discount.test.ts",
   "src/notifications/retry-policy.ts", "tests/notifications/retry-policy.test.ts",
 ]);
+// ADR 003 says to update it when the retry limit changes, so editing it is expected.
 const EXPECTED_CHANGES = new Set([
   "src/pricing/calculate-order-total.ts", "tests/pricing/calculate-order-total.test.ts",
   "src/pricing/shipping-price.ts", "src/pricing/pricing-policy.ts",
   "tests/pricing/shipping-price.test.ts",
+  "src/pricing/apply-discount.ts", "tests/pricing/wholesale-discount.test.ts",
   "src/notifications/retry-policy.ts", "tests/notifications/retry-policy.test.ts",
+  "docs/decisions/003-notification-retries.md",
 ]);
 
 function loadPrompts() {
@@ -68,8 +81,21 @@ function newStats() {
   return {
     costUsd: 0, durationMs: 0, turns: 0, tokensProcessed: 0, peakContext: 0,
     toolCalls: 0, searches: 0, bashCalls: 0, fullTestRuns: 0, focusedTestRuns: 0,
-    filesRead: new Set(), touchedArchiveOrFixture: false, prompts: 0,
+    filesRead: new Set(), touchedArchiveOrFixture: false, prompts: 0, qaPrompts: 0,
   };
+}
+
+/** Run every hidden check. Returns { task: { ok, failed: [titles] } }. */
+function verifyAll(dir) {
+  return Object.fromEntries(TASKS.map((t) => [t, verifyDetails(dir, t)]));
+}
+
+/** The QA report: the failed checks by name, same wording for both lanes. */
+function qaReport(results) {
+  const lines = TASKS.flatMap((t) => results[t].failed.map((f) => `- ${TASK_NAMES[t]}: ${f}`));
+  return lines.length
+    ? `QA found these acceptance checks failing:\n${lines.join("\n")}\n\nFix them without breaking anything else, then run the relevant tests.`
+    : null;
 }
 
 function track(stats, lane, dir, block) {
@@ -161,7 +187,9 @@ function runClaude(lane, dir, prompt, stats, resumeId) {
   });
 }
 
-async function runLane(lane, steps) {
+// `qaFresh`: whether the QA report starts a new conversation (disciplined) or goes into
+// the existing one (vibe), matching how each lane works.
+async function runLane(lane, steps, { qaFresh }) {
   const dir = join(ROOT, lane);
   stageCopy(dir);
   const stats = newStats();
@@ -170,16 +198,30 @@ async function runLane(lane, steps) {
     if (DRY_RUN) { console.log(`[${lane.padEnd(11)}] (dry run) ${step.prompt.split("\n")[0]}`); continue; }
     session = await runClaude(lane, dir, step.prompt, stats, step.fresh ? undefined : session);
   }
-  const verified = Object.fromEntries(["1", "3", "4"].map((t) => [t, verifyTask(dir, t)]));
+
+  // First try, then one QA round for whatever failed, then score again.
+  const firstTry = verifyAll(dir);
+  const report = DRY_RUN ? null : qaReport(firstTry);
+  let final = firstTry;
+  if (report) {
+    console.log(`[${lane.padEnd(11)}] QA round: ${report.split("\n").length - 3} failing check(s)`);
+    stats.qaPrompts++;
+    await runClaude(lane, dir, report, stats, qaFresh ? undefined : session);
+    final = verifyAll(dir);
+  }
+
   const changed = changedFiles(dir);
   const read = [...stats.filesRead];
+  const ok = (results) => Object.fromEntries(TASKS.map((t) => [t, results[t].ok]));
   return {
     lane, dir, ...stats,
     filesRead: read,
     relevantRead: read.filter((f) => RELEVANT.has(f)).length,
     changed,
     unrelatedChanged: changed.filter((f) => !EXPECTED_CHANGES.has(f)),
-    verified,
+    verifiedFirstTry: ok(firstTry),
+    verified: ok(final),
+    qaReport: report,
   };
 }
 
@@ -194,23 +236,26 @@ const fmt = {
 // Rows are slide 7's six scorecard measures (same labels, correctness first), then the costs from slide 6,
 // then diagnostics. Correctness leads because that's how slide 23 is read.
 function scoreboard(v, d) {
-  const passed = (x) => `${Object.values(x.verified).filter(Boolean).length} / ${Object.keys(x.verified).length}`;
-  // The race sends one prompt per task, so anything beyond that would be a correction.
-  const prompts = (x) => `${x.prompts} (${Math.max(0, x.prompts - Object.keys(x.verified).length)})`;
-  const task = (t) => (x) => (x.verified[t] ? "PASS" : "FAIL");
+  const count = (results) => `${Object.values(results).filter(Boolean).length} / ${TASKS.length}`;
+  // Corrections are the QA-round prompts: rework after the first answer was wrong.
+  const prompts = (x) => `${x.prompts} (${x.qaPrompts})`;
+  const pf = (b) => (b ? "PASS" : "FAIL");
+  // Per task: first try, and the result after QA when it changed.
+  const task = (t) => (x) => (x.verifiedFirstTry[t] === x.verified[t]
+    ? pf(x.verified[t])
+    : `${pf(x.verifiedFirstTry[t])} → ${pf(x.verified[t])} after QA`);
   const both = (f) => [f(v), f(d)];
   const rows = [
     ["**Scorecard (slide 7)**", "", ""],
-    ["Hidden verification passed", ...both(passed)],
-    ["...task 1 (tax bug)", ...both(task("1"))],
-    ["...task 3 (free shipping)", ...both(task("3"))],
-    ["...task 4 (retry limit)", ...both(task("4"))],
+    ["Hidden verification passed, first try", ...both((x) => count(x.verifiedFirstTry))],
+    ["...after one QA round", ...both((x) => count(x.verified))],
+    ...TASKS.map((t) => [`...task ${t} (${TASK_NAMES[t].toLowerCase()})`, ...both(task(t))]),
     ["Files read / files that mattered", ...both((x) => `${x.filesRead.length} / ${x.relevantRead} (${fmt.pct(x.relevantRead, x.filesRead.length)})`)],
     ["Prompts (corrections)", ...both(prompts)],
     ["Full / focused test runs", ...both((x) => `${x.fullTestRuns} / ${x.focusedTestRuns}`)],
     ["Files changed that didn't need to", ...both((x) => x.unrelatedChanged.length)],
     ["Peak context (tokens)", ...both((x) => fmt.k(x.peakContext))],
-    ["**Cost (slide 6)**", "", ""],
+    ["**Cost, including rework (slide 6)**", "", ""],
     ["Tokens processed", ...both((x) => fmt.k(x.tokensProcessed))],
     ["Cost (USD)", ...both((x) => fmt.usd(x.costUsd))],
     ["Agent minutes", ...both((x) => fmt.min(x.durationMs))],
@@ -226,7 +271,7 @@ function scoreboard(v, d) {
 }
 
 const prompts = loadPrompts();
-for (const id of ["vibe-1", "vibe-2", "vibe-3", "disciplined-1", "disciplined-3", "disciplined-4"]) {
+for (const id of TASKS.flatMap((t) => [`vibe-${t}`, `disciplined-${t}`])) {
   if (!prompts[id]) throw new Error(`prompts.md is missing <!-- prompt:${id} -->`);
 }
 
@@ -240,17 +285,19 @@ if (!CONFIG_DIR && personal.length) {
 
 console.log(`Race starting - model ${MODEL}, copies under ${ROOT}`
   + `${CONFIG_DIR ? `, profile ${CONFIG_DIR}` : ""}${DRY_RUN ? " (dry run)" : ""}\n`);
+// Vibe: one chat, every ticket and the QA report in it. Disciplined: a fresh chat each
+// time; task 1 is a one-liner, so it alone skips the plan.
 const [vibe, disciplined] = await Promise.all([
-  runLane("vibe", [
-    { prompt: prompts["vibe-1"], fresh: true },
-    { prompt: prompts["vibe-2"] },
-    { prompt: prompts["vibe-3"] },
-  ]),
-  runLane("disciplined", [
-    { prompt: prompts["disciplined-1"], fresh: true },
-    { prompt: prompts["disciplined-3"] + HEADLESS_NOTE, fresh: true },
-    { prompt: prompts["disciplined-4"] + HEADLESS_NOTE, fresh: true },
-  ]),
+  runLane(
+    "vibe",
+    TASKS.map((t, i) => ({ prompt: prompts[`vibe-${t}`], fresh: i === 0 })),
+    { qaFresh: false },
+  ),
+  runLane(
+    "disciplined",
+    TASKS.map((t) => ({ prompt: prompts[`disciplined-${t}`] + (t === "1" ? "" : HEADLESS_NOTE), fresh: true })),
+    { qaFresh: true },
+  ),
 ]);
 
 const board = scoreboard(vibe, disciplined);
