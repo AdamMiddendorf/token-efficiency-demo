@@ -68,20 +68,18 @@ copies live in a `parcel-pilot-stage/` folder next to this repository (for examp
 `C:/Projects/parcel-pilot-stage/`), outside the repo, so the agent can't see the
 prompts or answers.
 
-**Present from a clean Claude Code profile.** Your personal `~/.claude/CLAUDE.md`,
-rules, plugins and MCP servers load into every session. In rehearsal they made the
-demo agents branch, commit, try to push, ask about PR names in the plan, and once
-throw away a correct fix as "unrelated". Set `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"`
-in every demo terminal (run `/login` once in that profile) and pass the same folder
-to the race with `--config-dir`. See `demo-kit/README.md`.
+**Personal Claude Code config shows up on stage.** Your `~/.claude/CLAUDE.md` and
+rules load into every session. In rehearsal, git rules made demo agents check
+remotes, offer to branch or commit, and ask about branch names in the plan. The race
+blocks git in both lanes, so the scoreboard is safe. In a live demo it's only
+chatter: "ignore the git bits, that's my personal config." A clean profile removes
+it entirely (optional, see `demo-kit/README.md`).
 
 ### One week before
 
 - [ ] Both speakers rehearse once end-to-end, with the timer running. Demo 2 is
       the tightest block — rehearse it twice.
-- [ ] Create the clean profile on both machines: `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"; claude`,
-      then `/login` and `/exit`.
-- [ ] Run the race once (`node demo-kit/race.mjs --config-dir ~/.claude-demo`) and fill slide 23's `_` cells from
+- [ ] Run the race once (`node demo-kit/race.mjs`) and fill slide 23's `_` cells from
       `demo-kit/results/race-*.md`. That's your fallback if the live race hasn't finished.
 - [ ] Record a screen capture of Demo 1 and Demo 2 during rehearsal as backups.
 - [ ] Confirm the commands on the cheat sheet and backup slide 26 against your installed
@@ -102,7 +100,6 @@ to the race with `--config-dir`. See `demo-kit/README.md`.
 - [ ] `node demo-kit/stage.mjs` — creates three clean demo copies in `../../parcel-pilot-stage/`:
       `demo1-vibe`, `demo2-disciplined`, `demo3-cursor`. These have no `workshop/`
       (answers) or `verify/` (hidden checks), so the agent can't cheat.
-- [ ] Every Claude Code terminal below starts with `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"`.
 - [ ] **Eugene's machine:** `claude` running in `demo1-vibe`, fresh session, status
       line showing context % (`/statusline show model, context percentage and cost`).
       A second terminal in `demo3-cursor` with `agent` ready, signed in, context % status line on.
@@ -128,8 +125,8 @@ in *italics*.
 > swap between a few minutes of theory and a live demo, three times. No laptops
 > needed."
 
-*Slide 2. Eugene starts the race now (`node demo-kit/race.mjs --config-dir ~/.claude-demo`
-in the spare terminal) and says "race is running".*
+*Slide 2. Eugene starts the race now (`node demo-kit/race.mjs` in the spare
+terminal) and says "race is running".*
 
 > "Before we explain anything: we've just started two Claude Code agents on the
 > same three tickets in the same repo. Same model. One gets the prompts we all

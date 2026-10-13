@@ -25,20 +25,26 @@ checks), and live outside this repository, so the agent cannot find the
 solutions or these prompts. `verify.mjs` and `race.mjs` copy `verify/` in only
 for scoring, then remove it.
 
-## Use a clean Claude Code profile
+## Personal Claude Code config
 
 Your personal `~/.claude/CLAUDE.md`, rules, plugins and MCP servers load into
-every session, including the demos and both race lanes. In rehearsal that made
-agents create branches, commit, try to push, and once discard a correct fix as an
-"unrelated change". It also inflates the starting context. Present from a
-separate profile that holds nothing but a login:
+every session, including the demos and both race lanes. In rehearsal, git rules
+made agents create branches, commit, and once discard a correct fix as an
+"unrelated change", which corrupted the scoreboard.
+
+`race.mjs` blocks git in both lanes (`Bash(git:*)`), so that can't happen in the
+race. In a live demo it only shows up as git chatter; say so and move on.
+
+Optional, for a fully clean run: a separate profile that holds nothing but a login.
+Sign in once from a normal terminal (not a `!` command, it needs to be interactive):
 
 ```powershell
 $env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"
-claude        # first time only: run /login, then /exit
+claude        # run /login in this window, then /exit
 ```
 
-Use the same `$env:CLAUDE_CONFIG_DIR` in every demo terminal, and pass it to the race.
+Then use the same `$env:CLAUDE_CONFIG_DIR` in the demo terminals and pass
+`--config-dir ~/.claude-demo` to the race.
 
 ## Commands
 
@@ -47,7 +53,7 @@ node stage.mjs
 ```
 
 ```bash
-node race.mjs --model sonnet --config-dir ~/.claude-demo
+node race.mjs --model sonnet
 ```
 
 ```bash

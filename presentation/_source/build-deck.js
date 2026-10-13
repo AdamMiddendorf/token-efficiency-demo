@@ -290,7 +290,7 @@ section("Demo 1 - Vibe");
     "Express: did it go free too?",
     "Hidden check, then context %",
   ], { paraSpaceAfter: 9 }), { x: 8.05, y: 3.15, w: 4.3, h: 3.4, fontSize: 16, color: WHITE });
-  s.addNotes("EUGENE drives, ADAM narrates and tallies. Eugene: fresh Claude Code session (clean profile) in parcel-pilot-stage/demo1-vibe, status line visible. Paste prompt 1 - expect the tax fix to be right; say 'good docs and a failing test did our job for us'. Then prompt 2 in the SAME chat; ask the room if anyone sees a problem with the ticket. When it finishes, run the hidden check: node demo-kit/verify.mjs ../../parcel-pilot-stage/demo1-vibe 1 3. In rehearsal Task 3 failed every time: '> 10000' means exactly £100 still pays, and express went free too. Open shipping-price.ts and show the one if. Then /context. Adam: 'It did exactly what we asked. The bug is in the prompt.'");
+  s.addNotes("EUGENE drives, ADAM narrates and tallies. Eugene: fresh Claude Code session in parcel-pilot-stage/demo1-vibe, status line visible. Paste prompt 1 - expect the tax fix to be right; say 'good docs and a failing test did our job for us'. Then prompt 2 in the SAME chat; ask the room if anyone sees a problem with the ticket. When it finishes, run the hidden check: node demo-kit/verify.mjs ../../parcel-pilot-stage/demo1-vibe 1 3. In rehearsal Task 3 failed every time: '> 10000' means exactly £100 still pays, and express went free too. Open shipping-price.ts and show the one if. Then /context. Adam: 'It did exactly what we asked. The bug is in the prompt.'");
 }
 
 // =====================================================================
@@ -507,7 +507,7 @@ section("Demo 2 - Disciplined");
     "One focused test run",
     "Task 3: PASS here, FAIL in Demo 1",
   ], { paraSpaceAfter: 9 }), { x: 8.05, y: 3.15, w: 4.3, h: 3.4, fontSize: 16, color: WHITE });
-  s.addNotes("ADAM drives the Claude Code CLI (clean profile) in parcel-pilot-stage/demo2-disciplined, EUGENE narrates and keeps the same tally as Demo 1. Prompts: demo-kit/prompts.md (disciplined-1, disciplined-3, save-plan, build-from-plan). Step 2: 'same ticket Demo 1 got wrong - this time we say the two things we knew.' At step 3 ask the room 'what would you change in this plan?'. At step 4, read /context before and after /clear as numbers - a fresh session still holds the system prompt and CLAUDE.md, so the floor isn't zero. Step 5: run verify.mjs ... 1 3 - Task 3 passes here and failed in Demo 1.");
+  s.addNotes("ADAM drives the Claude Code CLI in parcel-pilot-stage/demo2-disciplined, EUGENE narrates and keeps the same tally as Demo 1. Prompts: demo-kit/prompts.md (disciplined-1, disciplined-3, save-plan, build-from-plan). Step 2: 'same ticket Demo 1 got wrong - this time we say the two things we knew.' At step 3 ask the room 'what would you change in this plan?'. At step 4, read /context before and after /clear as numbers - a fresh session still holds the system prompt and CLAUDE.md, so the floor isn't zero. Step 5: run verify.mjs ... 1 3 - Task 3 passes here and failed in Demo 1.");
 }
 
 // =====================================================================
@@ -709,13 +709,14 @@ section("Close");
   const v = (t) => ({ text: t, options: { align: "center" } });
   const rows = [
     [{ text: "Metric", options: { bold: true, color: WHITE, fill: { color: PURPLE } } }, hdr("Vibe", SLATE), hdr("Disciplined", TEAL)],
-    [b("Tasks that passed hidden verification"), v("_ / 3"), v("_ / 3")],
-    [b("Tokens processed"), v("_"), v("_")],
-    [b("Peak context"), v("_"), v("_")],
-    [b("Cost"), v("_"), v("_")],
-    [b("Files read · relevant ratio"), v("_"), v("_")],
-    [b("Files changed that didn't need to"), v("_"), v("_")],
-    [b("Agent minutes"), v("_"), v("_")],
+    // Rehearsal: race.mjs, Sonnet, 13 Oct 2026 (results/race-2026-10-13T23-07-58.md).
+    [b("Tasks that passed hidden verification"), v("2 / 3"), v("3 / 3")],
+    [b("Tokens processed"), v("907k"), v("729k")],
+    [b("Peak context"), v("60.0k"), v("51.3k")],
+    [b("Cost"), v("$0.90"), v("$0.60")],
+    [b("Full / focused test runs"), v("5 / 0"), v("0 / 3")],
+    [b("Files read · relevant ratio"), v("7 · 100%"), v("9 · 89%")],
+    [b("Agent minutes"), v("2.2"), v("1.7")],
   ];
   s.addTable(rows, { x: 0.7, y: 1.85, w: 8.2, colW: [4.2, 2.0, 2.0], fontSize: 15, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.56, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "results table" });
   panel(s, 9.2, 1.85, 3.4, 4.5);
@@ -723,7 +724,7 @@ section("Close");
   text(s, "Read correctness first", { x: 9.5, y: 2.75, w: 2.85, h: 0.75, fontSize: 18, bold: true, color: PURPLE });
   text(s, "A lane that is cheaper but wrong lost. A lane that is right and cheaper won twice.", { x: 9.5, y: 3.55, w: 2.85, h: 1.6, fontSize: 15, color: SLATE });
   text(s, "The fix was one line either way. The rest was the cost of not saying what we knew.", { x: 9.5, y: 5.05, w: 2.85, h: 1.2, fontSize: 15, bold: true });
-  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: correctness first, then tokens and context, then files. Fill the '_' cells in this slide from your rehearsal run so there's a fallback if the live race hasn't finished. If the vibe lane got everything right: point at tokens, peak context and files read - it paid more to get there.");
+  s.addNotes("BOTH. Eugene switches to the race terminal - the scoreboard prints when both lanes finish (results also saved in demo-kit/results/). Adam reads the rows top-down: correctness first, then tokens and context, then files. The numbers on this slide are from a rehearsal run - the fallback if the live race hasn't finished; say so if you use them. The failed vibe task is free shipping: 'over £100' became '> 10000' and express went free too. Then cost and context: a third more spend for a worse result. Files read is a wash on this repo - good docs keep both lanes on the right files - so don't oversell it.");
 }
 
 // 21 — checklist

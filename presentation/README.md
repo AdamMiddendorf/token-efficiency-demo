@@ -13,5 +13,5 @@ target, and managing context keeps it cheap.
 | [`demo-kit/`](demo-kit/README.md) | Demo staging, every prompt, the vibe-vs-disciplined race, scoring |
 | [`_source/`](_source/) | Generator for the deck: `npm install && npm run build` |
 
-Slide 23 has blank `_` cells for the race results: fill them from a rehearsal
+Slide 23 holds rehearsal race results as a fallback: refresh them from a new
 run of `node demo-kit/race.mjs` (see the run of show).

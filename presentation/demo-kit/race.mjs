@@ -9,9 +9,10 @@
 // works in its own throwaway copy of parcel-pilot (no workshop/ or verify/ folders),
 // so nothing it does can touch this repository. Results are written to ./results/.
 //
-// --config-dir runs both lanes under a separate Claude Code profile (CLAUDE_CONFIG_DIR),
-// so your personal ~/.claude/CLAUDE.md, rules, plugins and MCP servers stay out of the
-// race. Sign in to that profile once first: see README.md.
+// Both lanes run with git disabled, so personal rules can't branch or discard work.
+// Optional: --config-dir runs both lanes under a separate Claude Code profile
+// (CLAUDE_CONFIG_DIR), keeping your personal ~/.claude/CLAUDE.md, rules and MCP servers
+// out of the race entirely. Sign in to that profile once first: see README.md.
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
@@ -113,7 +114,9 @@ function runClaude(lane, dir, prompt, stats, resumeId) {
     "--model", MODEL, "--max-turns", MAX_TURNS,
     "--permission-mode", "acceptEdits",
     "--allowedTools", "Read,Glob,Grep,Edit,Write,Bash,TodoWrite",
-    "--disallowedTools", "WebFetch,WebSearch",
+    // No git in either lane: personal rules ("branch, commit, ship it") otherwise move or
+    // discard work between tasks, and the scorer only sees the final working tree.
+    "--disallowedTools", "WebFetch,WebSearch,Bash(git:*)",
   ];
   if (resumeId) cliArgs.push("--resume", resumeId);
   stats.prompts++;
@@ -216,12 +219,12 @@ for (const id of ["vibe-1", "vibe-2", "vibe-3", "disciplined-1", "disciplined-3"
   if (!prompts[id]) throw new Error(`prompts.md is missing <!-- prompt:${id} -->`);
 }
 
-// A personal CLAUDE.md or rules folder loads into both lanes and changes how they behave
-// (committing, branching, asking about PRs). Warn rather than refuse.
+// A personal CLAUDE.md or rules folder loads into both lanes. Git is blocked, so it can't
+// corrupt the score, but it still adds to context. Mention it rather than refuse.
 const personal = ["CLAUDE.md", "rules"].filter((f) => existsSync(join(homedir(), ".claude", f)));
 if (!CONFIG_DIR && personal.length) {
-  console.warn(`WARNING: your ~/.claude/${personal.join(" and ~/.claude/")} will load into both lanes.`
-    + " Pass --config-dir <clean profile> for a fair race (see README.md).\n");
+  console.warn(`Note: your ~/.claude/${personal.join(" and ~/.claude/")} will load into both lanes`
+    + " (git is blocked either way). --config-dir <profile> keeps them out entirely.\n");
 }
 
 console.log(`Race starting - model ${MODEL}, copies under ${ROOT}`
