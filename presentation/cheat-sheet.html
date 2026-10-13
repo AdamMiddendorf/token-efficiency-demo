@@ -92,15 +92,16 @@
         <tr><td>Plan?</td><td>Plan first (and stop), or straight to the edit?</td></tr>
         <tr><td>Verify</td><td>The exact command that proves it.</td></tr>
       </table>
-<pre><span class="c">Goal:</span> cap WHOLESALE discounts at £500. Retail unchanged.
-<span class="c">Acceptance:</span> retail £600 → £600;
-  wholesale £400 → £400, £600 → £500
-<span class="c">Context:</span> @apply-discount.ts @pricing-policy.ts
-  @wholesale-discount.test.ts
-<span class="c">Constraints:</span> no promotions/ edits, no floats,
-  cap lives in PricingPolicy, don't weaken tests
+<pre><span class="c">Goal:</span> free STANDARD shipping when the discounted
+  subtotal is at least £100. Express never free.
+<span class="c">Acceptance:</span> £99.99 → £5; exactly £100 → free;
+  express £150 → £15; £120 − 20% = £96 → £5
+<span class="c">Context:</span> @shipping-price.ts @pricing-policy.ts
+  not src/shipping/ (method choice, carrier costs)
+<span class="c">Constraints:</span> threshold lives in PricingPolicy,
+  no floats, don't weaken tests
 <span class="c">Plan:</span> ≤ 8 lines, then stop for my review
-<span class="c">Verify:</span> npm test -- tests/pricing/wholesale-…</pre>
+<span class="c">Verify:</span> npm test -- tests/pricing</pre>
     </div>
   </section>
 
@@ -216,7 +217,7 @@ Open Qs      anything it had to guess</pre>
     </div>
   </section>
 
-  <footer><span>Xplor Technologies - CONFIDENTIAL · Practise on parcel-pilot: workshop/tasks 03, 05, 06, 07</span><span>Say what you know · Prove what you changed · Reset when the goal changes · 2 / 2</span></footer>
+  <footer><span>Xplor Technologies - CONFIDENTIAL · Practise on parcel-pilot: workshop/tasks 02, 05, 06, 07</span><span>Say what you know · Prove what you changed · Reset when the goal changes · 2 / 2</span></footer>
 </div>
 
 </body>

@@ -123,7 +123,7 @@ section("Open");
     glyph(s, 0.95, l.y + 0.25, 0.5, l.color, l.g);
     text(s, l.name, { x: 1.65, y: l.y + 0.22, w: 4.2, h: 0.4, fontSize: 18, bold: true, color: l.color });
     text(s, l.how, { x: 1.65, y: l.y + 0.68, w: 4.4, h: 0.7, fontSize: 14, color: SLATE });
-    ["1  Tax bug", "2  Wholesale cap", "4  Retry limit"].forEach((t, i) => {
+    ["1  Tax bug", "3  Free shipping", "4  Retry limit"].forEach((t, i) => {
       const x = 6.3 + i * 2.1;
       s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: l.y + 0.45, w: 1.9, h: 0.6, rectRadius: 0.08, fill: { color: WHITE }, line: { color: l.color, width: 1.25 }, objectName: "task chip" });
       text(s, t, { x, y: l.y + 0.45, w: 1.9, h: 0.6, fontSize: 14, bold: true, color: INK, align: "center", valign: "middle" });
@@ -215,7 +215,7 @@ section("Theory 1 - Context");
   text(s, bullets([
     "archive/ holds retired pricing code that looks current - and is never compiled or tested",
     "tax-calculator.ts is the obvious suspect for a tax bug; the bug is somewhere else",
-    "promotion-engine.ts has a MAX_CAMPAIGN_PERCENT constant that is the wrong home for a money cap",
+    "src/shipping/ has carrier-rates.ts and shipping-selector.ts: right-sounding, wrong for what the customer pays",
   ]), { x: 0.7, y: 5.3, w: 11.9, h: 1.5, fontSize: 15, color: SLATE });
   s.addNotes("ADAM. Make it concrete. One careless read of that analytics fixture costs more than the entire source tree - four times over. The demo bug needs ONE line changed in ONE file. And this repo is deliberately realistic: dead code that looks alive, files whose names lie. Your agent doesn't know which is which unless you tell it.");
 }
@@ -279,18 +279,18 @@ section("Demo 1 - Vibe");
   text(s, "THE PROMPTS", { x: 0.7, y: 2.5, w: 6.6, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: AQUA });
   code(s, "An order with a percentage discount is\ncharged too much tax. Fix the bug and\nmake the tests pass.", 0.7, 2.85, 6.6, 1.55, 16);
   text(s, "then, in the same chat:", { x: 0.7, y: 4.55, w: 6.6, h: 0.3, fontSize: 14, color: LAV });
-  code(s, "Also, wholesale customers shouldn't get\nmore than £500 off. Add that.", 0.7, 4.9, 6.6, 1.2, 16);
+  code(s, "Also, make shipping free on orders\nover £100.", 0.7, 4.9, 6.6, 1.2, 16);
   panel(s, 7.75, 2.5, 4.85, 4.2, C.text1);
   text(s, "WATCH FOR", { x: 8.05, y: 2.75, w: 4.3, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: AQUA });
   text(s, bullets([
     "How many files it opens (1 matters)",
     "archive/ or the 130k fixture",
-    "Edits to tax-calculator.ts (wrong file)",
     "Full test-suite runs",
-    "A cap on retail too, or in promotions/",
-    "Context % at the end",
+    "Exactly £100: free, or still £5?",
+    "Express: did it go free too?",
+    "Hidden check, then context %",
   ], { paraSpaceAfter: 9 }), { x: 8.05, y: 3.15, w: 4.3, h: 3.4, fontSize: 16, color: WHITE });
-  s.addNotes("EUGENE drives, ADAM narrates and tallies. Eugene: fresh Claude Code session in parcel-pilot-stage/demo1-vibe, status line visible. Paste prompt 1. Narrate what it does - don't help it. ~4 min cap. Then prompt 2 in the SAME chat. At ~8 min run /context and leave it on screen. Adam: count files read, full test runs, wrong-file edits out loud. If it goes great, that's fine - the race will still show the averages, and say 'it got lucky with CLAUDE.md doing our job for us'.");
+  s.addNotes("EUGENE drives, ADAM narrates and tallies. Eugene: fresh Claude Code session (clean profile) in parcel-pilot-stage/demo1-vibe, status line visible. Paste prompt 1 - expect the tax fix to be right; say 'good docs and a failing test did our job for us'. Then prompt 2 in the SAME chat; ask the room if anyone sees a problem with the ticket. When it finishes, run the hidden check: node demo-kit/verify.mjs ../../parcel-pilot-stage/demo1-vibe 1 3. In rehearsal Task 3 failed every time: '> 10000' means exactly £100 still pays, and express went free too. Open shipping-price.ts and show the one if. Then /context. Adam: 'It did exactly what we asked. The bug is in the prompt.'");
 }
 
 // =====================================================================
@@ -349,21 +349,21 @@ section("Theory 2 - Planning");
   const s = slide("CONTENT");
   chip(s, "THEORY 2 · EUGENE");
   s.addText("Aim: the six-part prompt", { placeholder: "title" });
-  s.addText("Six lines, not six paragraphs. Example: the wholesale discount cap we'll build in Demo 2.", { placeholder: "subtitle" });
+  s.addText("Six lines, not six paragraphs. Example: the free-shipping ticket Demo 1 got wrong.", { placeholder: "subtitle" });
   const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: PURPLE } } });
   const b = (t) => ({ text: t, options: { bold: true } });
   const rows = [
     [hdr("Part"), hdr("Answers"), hdr("Example")],
-    [b("Goal"), "What observable result exists afterwards?", "Wholesale discounts are capped at £500"],
-    [b("Acceptance"), "How do we know it's right, edge cases included?", "Retail £600 → £600; wholesale £600 → £500"],
-    [b("Context"), "Which files, symbols, tests, docs?", "apply-discount.ts, pricing-policy.ts, the test"],
-    [b("Constraints"), "What must not change?", "No promotions/ edits, no floats, no new literals"],
+    [b("Goal"), "What observable result exists afterwards?", "Free standard shipping from £100, after discount"],
+    [b("Acceptance"), "How do we know it's right, edge cases included?", "Exactly £100 → free; express → never free"],
+    [b("Context"), "Which files, symbols, tests, docs?", "shipping-price.ts, pricing-policy.ts; not src/shipping/"],
+    [b("Constraints"), "What must not change?", "Method selection; no floats, no new literals"],
     [b("Plan?"), "Plan first, or straight to the edit?", "Plan in ≤ 8 lines, then wait for me"],
-    [b("Verify"), "The exact command that proves it", "npm test -- tests/pricing/wholesale-discount.test.ts"],
+    [b("Verify"), "The exact command that proves it", "npm test -- tests/pricing && npm run typecheck"],
   ];
   s.addTable(rows, { x: 0.7, y: 1.85, w: 11.9, colW: [1.9, 4.6, 5.4], fontSize: 15, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.6, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "six-part table" });
-  note(s, "The retail row is the one that matters: it's the edge case a vague prompt never mentions.", 6.25, 0.6);
-  s.addNotes("EUGENE. Walk the rows using the Demo 2 task. Point out the retail £600 row - without it, almost every agent caps everyone. And the constraint 'no promotions/' - because there's a constant called MAX_CAMPAIGN_PERCENT sitting there looking perfect.");
+  note(s, "The acceptance row is the one that matters: both edge cases Demo 1 got wrong are in it.", 6.25, 0.6);
+  s.addNotes("EUGENE. Walk the rows using the Demo 2 task - the same ticket Demo 1 failed. Point at the acceptance row: 'over £100' became '> 10000', so exactly £100 still paid; and nobody said express was excluded. Two facts we knew and never typed. And the context row says 'not src/shipping/' - because carrier-rates.ts and shipping-selector.ts are sitting there sounding perfect.");
 }
 
 // 12 — before / after
@@ -413,7 +413,7 @@ section("Theory 2 - Planning");
     text(s, h, { x: x + 0.3, y: 4.0, w: 3.3, h: 0.45, fontSize: 18, bold: true });
     text(s, b, { x: x + 0.3, y: 4.5, w: 3.3, h: 1.2, fontSize: 15, color: SLATE });
   });
-  note(s, "In Demo 1 the agent planned silently, inside its own head, where nobody could catch the retail cap before it was written.", 6.05, 0.75);
+  note(s, "In Demo 1 the agent planned silently, inside its own head, where nobody could ask \"does exactly £100 count?\" before it was written.", 6.05, 0.75);
   s.addNotes("EUGENE. This is why we plan. The agent in Demo 1 DID plan - it just did it invisibly, between tool calls. Plan mode makes that thinking visible and reviewable before a single edit. A wrong assumption costs one line to fix in a plan, a correction spiral in the build, and a whole new session after review.");
 }
 
@@ -426,14 +426,14 @@ section("Theory 2 - Planning");
   text(s, "ASK THE PLAN FOR", { x: 0.7, y: 1.85, w: 6.6, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: MUTED });
   code(s, [
     "Goal         one line, in your words",
-    "Change       apply-discount.ts,",
+    "Change       shipping-price.ts,",
     "             pricing-policy.ts",
-    "Don't touch  promotions/, api/, the pipeline",
-    "Approach     cap in applyDiscount,",
-    "             wholesale tier only",
-    "Tests        below / at / above £500;",
-    "             retail £600 stays £600",
-    "Verify       npm test -- tests/pricing/…",
+    "Don't touch  src/shipping/, price-breakdown",
+    "Approach     >= threshold, after discount,",
+    "             standard method only",
+    "Tests        £99.99 / £100 / £150; express;",
+    "             £120 - 20% = £96 still pays",
+    "Verify       npm test -- tests/pricing",
     "Open Qs      anything it had to guess",
   ].join("\n"), 0.7, 2.2, 6.6, 3.2, 14);
   panel(s, 7.65, 1.85, 4.95, 3.55);
@@ -447,7 +447,7 @@ section("Theory 2 - Planning");
     "Skip planning when the fix is one obvious line",
   ], { paraSpaceAfter: 8 }), { x: 7.95, y: 2.75, w: 4.45, h: 2.6, fontSize: 15 });
   note(s, "A plan that just restates your prompt cost tokens and bought nothing. A good plan says something you didn't.", 5.7, 0.6);
-  s.addNotes("EUGENE. The sections that matter most are the two people skip: 'don't touch' and 'open questions'. 'Don't touch' is what keeps the agent from wandering into promotions/ or refactoring the pipeline. 'Open questions' is where it tells you what it guessed - that's where the retail-vs-wholesale bug would have surfaced. Once approved, the plan is the contract: if the agent finds something that breaks the plan, the right move is to stop and re-plan, not let it improvise.");
+  s.addNotes("EUGENE. The sections that matter most are the two people skip: 'don't touch' and 'open questions'. 'Don't touch' is what keeps the agent from wandering into src/shipping/ or refactoring the pipeline. 'Open questions' is where it tells you what it guessed - 'does exactly £100 count? express too?' is where both of Demo 1's bugs would have surfaced. Once approved, the plan is the contract: if the agent finds something that breaks the plan, the right move is to stop and re-plan, not let it improvise.");
 }
 
 // T2g — plan, save, clear, build
@@ -484,13 +484,13 @@ section("Demo 2 - Disciplined");
   const s = slide("DEMO_DARK");
   chip(s, "LIVE DEMO 2 · ADAM", true);
   s.addText("Demo 2 · Plan, save, clear, build", { placeholder: "title" });
-  s.addText("Claude Code CLI · the same bugs as Demo 1, done with a plan", { placeholder: "subtitle" });
+  s.addText("Claude Code CLI · the same tickets as Demo 1, done with a plan", { placeholder: "subtitle" });
   const steps = [
     ["1", "Tax bug: six-part prompt, no plan (it's one line). Then /context."],
-    ["2", "/clear. Shift+Tab into plan mode. Six-part prompt for the wholesale cap."],
-    ["3", "Review the plan out loud: wholesale only? money, not percent? don't-touch list?"],
-    ["4", "Save it to plans/wholesale-cap.md. /context, then /clear."],
-    ["5", "\"Implement plans/wholesale-cap.md.\" Narrow test, verify, /context."],
+    ["2", "/clear. Shift+Tab into plan mode. Six-part prompt for free shipping."],
+    ["3", "Review the plan out loud: at least £100? after discount? express excluded?"],
+    ["4", "Save it to plans/free-shipping.md. /context, then /clear."],
+    ["5", "\"Implement plans/free-shipping.md.\" Narrow test, hidden check, /context."],
   ];
   steps.forEach(([n, t], i) => {
     const y = 2.5 + i * 0.86;
@@ -501,13 +501,13 @@ section("Demo 2 - Disciplined");
   text(s, "WATCH FOR", { x: 8.05, y: 2.75, w: 4.3, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: AQUA });
   text(s, bullets([
     "Files read ≈ files named",
-    "Tiers in the plan, before any edit",
+    "Edge cases in the plan, before any edit",
     "Context drop after /clear",
-    "Build reads the plan + 3 files",
+    "Build reads the plan + named files",
     "One focused test run",
-    "Retail £600 stays £600",
+    "Task 3: PASS here, FAIL in Demo 1",
   ], { paraSpaceAfter: 9 }), { x: 8.05, y: 3.15, w: 4.3, h: 3.4, fontSize: 16, color: WHITE });
-  s.addNotes("ADAM drives the Claude Code CLI in parcel-pilot-stage/demo2-disciplined, EUGENE narrates and keeps the same tally as Demo 1. Prompts: demo-kit/prompts.md (disciplined-1, disciplined-2, save-plan, build-from-plan). At step 3 ask the room 'what would you change in this plan?'. At step 4, read /context out loud before and after /clear - that drop is the point. Step 5 shows the build working from a clean window.");
+  s.addNotes("ADAM drives the Claude Code CLI (clean profile) in parcel-pilot-stage/demo2-disciplined, EUGENE narrates and keeps the same tally as Demo 1. Prompts: demo-kit/prompts.md (disciplined-1, disciplined-3, save-plan, build-from-plan). Step 2: 'same ticket Demo 1 got wrong - this time we say the two things we knew.' At step 3 ask the room 'what would you change in this plan?'. At step 4, read /context before and after /clear as numbers - a fresh session still holds the system prompt and CLAUDE.md, so the floor isn't zero. Step 5: run verify.mjs ... 1 3 - Task 3 passes here and failed in Demo 1.");
 }
 
 // =====================================================================
@@ -651,7 +651,7 @@ section("Theory 3 - Context");
     [hdr("Lesson learned"), hdr("Where it belongs")],
     ["Money is integer minor units", "Layer 0 - one line"],
     ["Pricing operation order", "Layer 2 rule + layer 3 ADR"],
-    ["Wholesale cap is £500", "Policy constant + test"],
+    ["Free shipping starts at £100", "Policy constant + test"],
     ["A retry excludes attempt 1", "Layer 2 notifications rule"],
     ["\"Task 1 took three prompts\"", "Nowhere. Let it go."],
   ];
@@ -755,7 +755,7 @@ section("Close");
   s.addText("Reset when the goal changes.", { placeholder: "subtitle", y: 3.45, fontSize: 28 });
   s.addText([
     { text: "Cheat sheet and practice repo: parcel-pilot", options: { breakLine: true } },
-    { text: "Homework: tasks 3, 5, 6 and 7 in workshop/tasks  ·  Questions?", options: { color: MIST, bold: false } },
+    { text: "Homework: tasks 2, 5, 6 and 7 in workshop/tasks  ·  Questions?", options: { color: MIST, bold: false } },
   ], { placeholder: "byline" });
   s.addNotes("ADAM. Close on the three lines. Point to the cheat sheet (shared in the channel / handed out) and the repo for self-paced practice. Q&A for the remaining minutes.");
 }

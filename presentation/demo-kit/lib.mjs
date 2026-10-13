@@ -47,7 +47,13 @@ export function verifyTask(dir, task) {
   }
 }
 
+/**
+ * Every file that differs from the "workshop start" tag. Diffing against the tag,
+ * not `git status`, still counts changes when the agent commits its own work.
+ */
 export function changedFiles(dir) {
-  const { out } = sh("git status --porcelain", dir);
-  return out.split("\n").map((l) => l.slice(3).trim()).filter(Boolean);
+  const lines = (cmd) => sh(cmd, dir).out.split("\n").map((l) => l.trim()).filter(Boolean);
+  const tracked = lines("git diff --name-only workshop/start");
+  const untracked = lines("git ls-files --others --exclude-standard");
+  return [...new Set([...tracked, ...untracked])];
 }

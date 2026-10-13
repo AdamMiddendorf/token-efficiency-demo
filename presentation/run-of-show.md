@@ -64,14 +64,24 @@ unfinished vibe session is a perfectly good result.
 ## Preparation
 
 Run every `node demo-kit/...` command from this `presentation/` folder. Demo
-copies live in `D:/Projects/parcel-pilot-stage/`, outside the repo, so the agent
-can't see the prompts or answers.
+copies live in a `parcel-pilot-stage/` folder next to this repository (for example
+`C:/Projects/parcel-pilot-stage/`), outside the repo, so the agent can't see the
+prompts or answers.
+
+**Present from a clean Claude Code profile.** Your personal `~/.claude/CLAUDE.md`,
+rules, plugins and MCP servers load into every session. In rehearsal they made the
+demo agents branch, commit, try to push, ask about PR names in the plan, and once
+throw away a correct fix as "unrelated". Set `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"`
+in every demo terminal (run `/login` once in that profile) and pass the same folder
+to the race with `--config-dir`. See `demo-kit/README.md`.
 
 ### One week before
 
 - [ ] Both speakers rehearse once end-to-end, with the timer running. Demo 2 is
       the tightest block — rehearse it twice.
-- [ ] Run the race once (`node demo-kit/race.mjs`) and fill slide 23's `_` cells from
+- [ ] Create the clean profile on both machines: `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"; claude`,
+      then `/login` and `/exit`.
+- [ ] Run the race once (`node demo-kit/race.mjs --config-dir ~/.claude-demo`) and fill slide 23's `_` cells from
       `demo-kit/results/race-*.md`. That's your fallback if the live race hasn't finished.
 - [ ] Record a screen capture of Demo 1 and Demo 2 during rehearsal as backups.
 - [ ] Confirm the commands on the cheat sheet and backup slide 26 against your installed
@@ -89,9 +99,10 @@ can't see the prompts or answers.
 
 ### 30 minutes before
 
-- [ ] `node demo-kit/stage.mjs` — creates three clean demo copies in `D:/Projects/parcel-pilot-stage/`:
+- [ ] `node demo-kit/stage.mjs` — creates three clean demo copies in `../../parcel-pilot-stage/`:
       `demo1-vibe`, `demo2-disciplined`, `demo3-cursor`. These have no `workshop/`
       (answers) or `verify/` (hidden checks), so the agent can't cheat.
+- [ ] Every Claude Code terminal below starts with `$env:CLAUDE_CONFIG_DIR = "$HOME\.claude-demo"`.
 - [ ] **Eugene's machine:** `claude` running in `demo1-vibe`, fresh session, status
       line showing context % (`/statusline show model, context percentage and cost`).
       A second terminal in `demo3-cursor` with `agent` ready, signed in, context % status line on.
@@ -117,8 +128,8 @@ in *italics*.
 > swap between a few minutes of theory and a live demo, three times. No laptops
 > needed."
 
-*Slide 2. Eugene starts the race now (`node demo-kit/race.mjs` in the spare
-terminal) and says "race is running".*
+*Slide 2. Eugene starts the race now (`node demo-kit/race.mjs --config-dir ~/.claude-demo`
+in the spare terminal) and says "race is running".*
 
 > "Before we explain anything: we've just started two Claude Code agents on the
 > same three tickets in the same repo. Same model. One gets the prompts we all
@@ -138,7 +149,8 @@ terminal) and says "race is running".*
 
 *Slide 5 — the numbers.* One file ≈ 1.5k tokens, the whole `src/` ≈ 30k, one
 careless read of the analytics fixture ≈ 130k. The fix is one line. Point at the
-traps: `archive/`, `tax-calculator.ts`, `MAX_CAMPAIGN_PERCENT`.
+traps: `archive/`, `tax-calculator.ts`, and the two `src/shipping/` files that
+sound right for a shipping-price change and aren't.
 
 *Slide 6 — four costs.*
 
@@ -158,24 +170,32 @@ Hand-off: *"Eugene — let's vibe."*
 1. *(0:09)* Eugene pastes **vibe-1**:
    `An order with a percentage discount is charged too much tax. Fix the bug and make the tests pass.`
    "That's it. I'm not going to help it."
-2. *(0:09–0:13)* Let it work. **Adam narrates and tallies:** files read, searches,
-   `archive/`, the fixture, `tax-calculator.ts`, full-suite runs.
-   - "It's searching for 'tax' across the whole repo — because we didn't say where."
-   - "Notice it's planning — between tool calls, in its head. We can't review any of it."
-   - If it reads `CLAUDE.md` → `docs/architecture.md` and goes straight to the right
-     file: "Good layered docs just did our job for us. Remember that for Theory 3."
-3. *(0:13)* In the **same chat**, paste **vibe-2**:
-   `Also, wholesale customers shouldn't get more than £500 off. Add that.`
-   Watch for: a cap on **everyone** (retail too), the cap in `src/promotions/`,
-   an inline `50000`, a test edited to pass.
-4. *(0:16)* Stop it if still going (Esc). `/context` and leave it on screen. Adam
-   reads the tally. Optional: `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo1-vibe 1 2`.
+2. *(0:09–0:11)* Let it work (about a minute in rehearsal). **Adam narrates and
+   tallies:** files read, searches, `archive/`, the fixture, `tax-calculator.ts`,
+   full-suite runs.
+   - "It's searching across `src/` for 'discount' — because we didn't say where."
+   - "It ran the whole suite, not the one test file. Fine at 120 tests; expensive at 12,000."
+   - Expect the tax fix to be right. Say so: "Good docs and a failing test did our
+     job for us. Remember that for Theory 3."
+3. *(0:11)* In the **same chat**, paste **vibe-2**:
+   `Also, make shipping free on orders over £100.`
+   Adam: "That's a real ticket. Anyone see a problem with it?" Take one answer, move on.
+4. *(0:13)* When it finishes, **Eugene runs the hidden check**:
+   `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo1-vibe 1 3` (second terminal,
+   from `presentation/`). In rehearsal Task 3 failed every time, two ways:
+   - **exactly £100 still pays shipping.** It wrote `> 10000`. We said "over"; the
+     business meant "at least".
+   - **express became free too.** We never said it shouldn't be.
+   Open `src/pricing/shipping-price.ts` and show the one `if`.
+5. *(0:16)* `/context` and leave it on screen. Adam reads the tally.
 
-> Adam: "Hold on to that context number. Eugene's going to show what went wrong —
-> and it wasn't the model."
+> Adam: "It did exactly what we asked. The bug is in the prompt: two facts we knew
+> and didn't say. Hold on to that context number — Eugene's going to show what went
+> wrong, and it wasn't the model."
 
-**If it goes badly wrong:** switch to the rehearsal recording. **If it goes
-perfectly:** say so, show `/context` anyway — the race measures the average.
+**If it goes badly wrong:** switch to the rehearsal recording. **If Task 3
+passes:** say so and show the diff — it guessed right; the race shows whether it
+guesses right on average.
 
 ### 0:17–0:27 · Theory 2: planning keeps agents on target — slides 9–15 · Eugene
 
@@ -186,8 +206,9 @@ perfectly:** say so, show `/context` anyway — the race measures the average.
 > "Five verbs: Aim, Plan, Build, Prove, Reset. Today we lean on two of them. Plan
 > keeps it on target. Reset keeps it cheap."
 
-*Slide 11 — six-part prompt (1 min).* Stress the retail £600 row: "the edge case a
-vague prompt never mentions."
+*Slide 11 — six-part prompt (1 min).* Stress the acceptance row — exactly £100 is
+free, express never is: "the two edge cases Demo 1 got wrong, because the vague
+prompt never mentioned them."
 
 *Slide 12 — before/after (1 min).* "~150 tokens longer, saves tens of thousands."
 
@@ -201,9 +222,10 @@ vague prompt never mentions."
 *Slide 14 — a plan that keeps the agent on target (2 min).*
 
 > "Ask for the plan in sections. The two everyone skips matter most. 'Don't
-> touch' is what stops the agent wandering into promotions/ or refactoring the
-> pipeline. 'Open questions' is where it admits what it guessed — that's where the
-> retail-vs-wholesale bug would surface. Once you approve it, the plan is the
+> touch' is what stops the agent wandering into src/shipping/ or refactoring the
+> pipeline. 'Open questions' is where it admits what it guessed — 'does £100
+> exactly qualify? express too?' is exactly where Demo 1's bugs would have
+> surfaced. Once you approve it, the plan is the
 > contract: build only what's in it, and if new evidence breaks it, stop and
 > re-plan instead of letting the agent improvise."
 
@@ -227,22 +249,26 @@ Hand-off: *"Adam's going to do exactly that, on the same bugs."*
 1. *(0:27)* Paste **disciplined-1** (tax bug). Normal mode, no plan — "it's one line;
    a plan would be pure cost." Expect 2–3 files read, one-line edit, one focused
    test, typecheck. *(0:29)* `/context` — compare with Demo 1. Say it aloud.
-2. *(0:30)* `/clear`. **Shift+Tab** into plan mode. Paste **disciplined-2**.
-3. *(0:31)* **Review the plan out loud** (Eugene leads): "Goal — right? Change —
-   only apply-discount and pricing-policy? Don't touch — promotions? Approach —
-   wholesale only? Tests — retail £600? Open questions?" Ask the room for one
-   change. If the plan is wrong, correct it in one line — the best moment in the
-   session if it happens.
+2. *(0:30)* `/clear`. **Shift+Tab** into plan mode. Paste **disciplined-3** (free
+   shipping). "Same ticket Demo 1 got wrong. This time we say the two things we knew."
+3. *(0:31)* **Review the plan out loud** (Eugene leads): "Goal — at least £100, after
+   discount? Change — only shipping-price and pricing-policy? Don't touch —
+   src/shipping/, price-breakdown? Tests — exactly £100, express, the £96 case?
+   Open questions?" Ask the room for one change. If the plan is wrong, correct it
+   in one line — the best moment in the session if it happens.
 4. *(0:33)* Decline "proceed" (keep planning), **Shift+Tab** out of plan mode, paste
-   the **save-plan** prompt → `plans/wholesale-cap.md`. `/context` — read the number.
-   `/clear`. `/context` again — "that drop is the exploration we just threw away."
-5. *(0:35)* Paste the **build-from-plan** prompt: `Implement plans/wholesale-cap.md…`
-   Eugene: "Watch what it reads: the plan, then the files the plan names. Nothing else."
-6. *(0:37)* `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo2-disciplined 1 2`
-   and `/context`. Eugene reads the tally next to Demo 1's.
+   the **save-plan** prompt → `plans/free-shipping.md`. `/context` — read the number.
+   `/clear`. `/context` again — read the drop as a number, not a cliff: a fresh
+   session still holds the system prompt and CLAUDE.md, so the floor isn't zero.
+5. *(0:35)* Paste the **build-from-plan** prompt: `Implement plans/free-shipping.md…`
+   Eugene: "Watch what it reads: the plan first, then the files the plan names."
+6. *(0:37)* `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo2-disciplined 1 3`
+   and `/context`. Eugene reads the tally next to Demo 1's: **Task 3 PASS here,
+   FAIL there.**
 
-> Eugene: "Same bugs, same model. It was on target because the plan said where the
-> target was — and cheap because we threw the search away."
+> Eugene: "Same ticket, same model. Demo 1 shipped a bug because we didn't say what we
+> knew; this one was right because the plan said where the target was — and cheap
+> because we threw the search away."
 
 **Fallback:** if the save step fights you, skip it — approve the plan and build in
 the same session, then show `/compact keep the plan and the test results` instead.

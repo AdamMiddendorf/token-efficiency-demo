@@ -1,17 +1,21 @@
 // The race: the same three tasks, run headless through Claude Code twice, in parallel.
 //
 //   vibe         one conversation, three vague prompts (vibe-1..3 in prompts.md)
-//   disciplined  a fresh conversation per task, six-part prompts (disciplined-1, -2, -4)
+//   disciplined  a fresh conversation per task, six-part prompts (disciplined-1, -3, -4)
 //
-//   node race.mjs [--model sonnet] [--max-turns 40] [--root <dir>] [--dry-run]
+//   node race.mjs [--model sonnet] [--max-turns 40] [--root <dir>] [--config-dir <dir>] [--dry-run]
 //
 // Kick it off at minute 0 of the session; reveal the scoreboard at the end. Each lane
 // works in its own throwaway copy of parcel-pilot (no workshop/ or verify/ folders),
 // so nothing it does can touch this repository. Results are written to ./results/.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+//
+// --config-dir runs both lanes under a separate Claude Code profile (CLAUDE_CONFIG_DIR),
+// so your personal ~/.claude/CLAUDE.md, rules, plugins and MCP servers stay out of the
+// race. Sign in to that profile once first: see README.md.
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
-import { tmpdir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { homedir, tmpdir } from "node:os";
+import { basename, join, relative, resolve } from "node:path";
 import { KIT_DIR, changedFiles, stageCopy, verifyTask } from "./lib.mjs";
 
 const args = process.argv.slice(2);
@@ -21,23 +25,29 @@ const opt = (name, fallback) => {
 };
 const MODEL = opt("model", "sonnet");
 const MAX_TURNS = opt("max-turns", "40");
-const ROOT = resolve(opt("root", join(tmpdir(), "parcel-pilot-race")));
+const CONFIG_DIR = opt("config-dir", process.env.CLAUDE_CONFIG_DIR);
 const DRY_RUN = args.includes("--dry-run");
 
-// Files that genuinely help with tasks 1, 2 and 4 (plus the cheap routing docs).
+// Resolve the long-form path: on Windows tmpdir() can return an 8.3 short name
+// (C:\Users\ABCDEF~1\...) while the agent reports long paths, which breaks relative().
+const ROOT_ARG = resolve(opt("root", join(tmpdir(), "parcel-pilot-race")));
+mkdirSync(ROOT_ARG, { recursive: true });
+const ROOT = realpathSync.native(ROOT_ARG);
+
+// Files that genuinely help with tasks 1, 3 and 4 (plus the cheap routing docs).
 const RELEVANT = new Set([
   "CLAUDE.md", "AGENTS.md", "docs/architecture.md",
   "docs/decisions/002-pricing-operation-order.md",
   "docs/decisions/003-notification-retries.md",
-  "docs/decisions/004-promotions-are-not-pricing.md",
   "src/pricing/calculate-order-total.ts", "tests/pricing/calculate-order-total.test.ts",
-  "src/pricing/apply-discount.ts", "src/pricing/pricing-policy.ts",
-  "tests/pricing/wholesale-discount.test.ts",
+  "src/pricing/shipping-price.ts", "src/pricing/pricing-policy.ts",
+  "tests/pricing/shipping-price.test.ts",
   "src/notifications/retry-policy.ts", "tests/notifications/retry-policy.test.ts",
 ]);
 const EXPECTED_CHANGES = new Set([
-  "src/pricing/calculate-order-total.ts", "src/pricing/apply-discount.ts",
-  "src/pricing/pricing-policy.ts", "tests/pricing/wholesale-discount.test.ts",
+  "src/pricing/calculate-order-total.ts", "tests/pricing/calculate-order-total.test.ts",
+  "src/pricing/shipping-price.ts", "src/pricing/pricing-policy.ts",
+  "tests/pricing/shipping-price.test.ts",
   "src/notifications/retry-policy.ts", "tests/notifications/retry-policy.test.ts",
 ]);
 
@@ -64,7 +74,15 @@ function newStats() {
 function track(stats, lane, dir, block) {
   if (block.type !== "tool_use") return;
   const input = block.input ?? {};
-  const rel = (p) => (p ? relative(dir, resolve(dir, p)).replace(/\\/g, "/") : "");
+  const rel = (p) => {
+    if (!p) return "";
+    const r = relative(dir, resolve(dir, p)).replace(/\\/g, "/");
+    if (!r.startsWith("..")) return r;
+    // Same folder spelled another way (short vs long name, /c/ vs C:/): match on the lane suffix.
+    const marker = `/${basename(ROOT)}/${lane}/`;
+    const i = r.lastIndexOf(marker);
+    return i >= 0 ? r.slice(i + marker.length) : r;
+  };
   stats.toolCalls++;
   let detail = "";
   if (block.name === "Read") {
@@ -102,7 +120,8 @@ function runClaude(lane, dir, prompt, stats, resumeId) {
   console.log(`[${lane.padEnd(11)}] >>> ${prompt.split("\n")[0].slice(0, 80)}`);
 
   return new Promise((resolveRun, reject) => {
-    const child = spawn("claude", cliArgs, { cwd: dir, shell: process.platform === "win32" });
+    const env = CONFIG_DIR ? { ...process.env, CLAUDE_CONFIG_DIR: CONFIG_DIR } : process.env;
+    const child = spawn("claude", cliArgs, { cwd: dir, env, shell: process.platform === "win32" });
     let sessionId = resumeId;
     let buffer = "";
     child.stdout.on("data", (chunk) => {
@@ -148,7 +167,7 @@ async function runLane(lane, steps) {
     if (DRY_RUN) { console.log(`[${lane.padEnd(11)}] (dry run) ${step.prompt.split("\n")[0]}`); continue; }
     session = await runClaude(lane, dir, step.prompt, stats, step.fresh ? undefined : session);
   }
-  const verified = Object.fromEntries(["1", "2", "4"].map((t) => [t, verifyTask(dir, t)]));
+  const verified = Object.fromEntries(["1", "3", "4"].map((t) => [t, verifyTask(dir, t)]));
   const changed = changedFiles(dir);
   const read = [...stats.filesRead];
   return {
@@ -184,7 +203,7 @@ function scoreboard(v, d) {
     ["Opened archive/ or big fixture", v.touchedArchiveOrFixture ? "yes" : "no", d.touchedArchiveOrFixture ? "yes" : "no"],
     ["Files changed (unrelated)", `${v.changed.length} (${v.unrelatedChanged.length})`, `${d.changed.length} (${d.unrelatedChanged.length})`],
     ["Task 1 verified (tax)", v.verified["1"] ? "PASS" : "FAIL", d.verified["1"] ? "PASS" : "FAIL"],
-    ["Task 2 verified (cap)", v.verified["2"] ? "PASS" : "FAIL", d.verified["2"] ? "PASS" : "FAIL"],
+    ["Task 3 verified (free shipping)", v.verified["3"] ? "PASS" : "FAIL", d.verified["3"] ? "PASS" : "FAIL"],
     ["Task 4 verified (retries)", v.verified["4"] ? "PASS" : "FAIL", d.verified["4"] ? "PASS" : "FAIL"],
   ];
   const lines = ["| Metric | Vibe | Disciplined |", "|---|---:|---:|", ...rows.map((r) => `| ${r.join(" | ")} |`)];
@@ -193,11 +212,20 @@ function scoreboard(v, d) {
 }
 
 const prompts = loadPrompts();
-for (const id of ["vibe-1", "vibe-2", "vibe-3", "disciplined-1", "disciplined-2", "disciplined-4"]) {
+for (const id of ["vibe-1", "vibe-2", "vibe-3", "disciplined-1", "disciplined-3", "disciplined-4"]) {
   if (!prompts[id]) throw new Error(`prompts.md is missing <!-- prompt:${id} -->`);
 }
 
-console.log(`Race starting - model ${MODEL}, copies under ${ROOT}${DRY_RUN ? " (dry run)" : ""}\n`);
+// A personal CLAUDE.md or rules folder loads into both lanes and changes how they behave
+// (committing, branching, asking about PRs). Warn rather than refuse.
+const personal = ["CLAUDE.md", "rules"].filter((f) => existsSync(join(homedir(), ".claude", f)));
+if (!CONFIG_DIR && personal.length) {
+  console.warn(`WARNING: your ~/.claude/${personal.join(" and ~/.claude/")} will load into both lanes.`
+    + " Pass --config-dir <clean profile> for a fair race (see README.md).\n");
+}
+
+console.log(`Race starting - model ${MODEL}, copies under ${ROOT}`
+  + `${CONFIG_DIR ? `, profile ${CONFIG_DIR}` : ""}${DRY_RUN ? " (dry run)" : ""}\n`);
 const [vibe, disciplined] = await Promise.all([
   runLane("vibe", [
     { prompt: prompts["vibe-1"], fresh: true },
@@ -206,7 +234,7 @@ const [vibe, disciplined] = await Promise.all([
   ]),
   runLane("disciplined", [
     { prompt: prompts["disciplined-1"], fresh: true },
-    { prompt: prompts["disciplined-2"] + HEADLESS_NOTE, fresh: true },
+    { prompt: prompts["disciplined-3"] + HEADLESS_NOTE, fresh: true },
     { prompt: prompts["disciplined-4"] + HEADLESS_NOTE, fresh: true },
   ]),
 ]);

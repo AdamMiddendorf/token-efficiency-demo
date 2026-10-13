@@ -1,6 +1,6 @@
 // Scores a demo copy against the hidden verification suite.
 //
-//   node verify.mjs <demo-copy-dir> [task ...]      e.g. node verify.mjs ../../../parcel-pilot-stage/demo1-vibe 1 2
+//   node verify.mjs <demo-copy-dir> [task ...]      e.g. node verify.mjs ../../../parcel-pilot-stage/demo1-vibe 1 3
 //
 // Prints PASS/FAIL per task and every file that changed since "workshop start".
 import { resolve } from "node:path";
@@ -12,7 +12,7 @@ if (!dirArg) {
   process.exit(1);
 }
 const dir = resolve(dirArg);
-const tasks = taskArgs.length ? taskArgs : ["1", "2", "4"];
+const tasks = taskArgs.length ? taskArgs : ["1", "3", "4"];
 
 for (const t of tasks) console.log(`Task ${t}: ${verifyTask(dir, t) ? "PASS" : "FAIL"}`);
 const files = changedFiles(dir);
