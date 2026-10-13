@@ -10,7 +10,7 @@ Requires Node 20+, git, and the `claude` CLI signed in. Run `npm install` in
 | `prompts.md` | Every prompt used in the session, vibe and disciplined. Copy-paste from here. |
 | `race.mjs` | Runs the vibe lane and the disciplined lane headless through Claude Code, in parallel, and prints a scoreboard. |
 | `verify.mjs` | Scores any demo copy: PASS/FAIL per task plus every file changed. |
-| `cursor-rule-example/notifications.mdc` | The scoped rule Eugene writes at the end of Demo 3, if typing it live is too slow. |
+| `claude-rule-example/notifications.md` | The path-scoped rule Eugene saves to `.claude/rules/` at the end of Demo 3, if typing it live is too slow. |
 | `results/` | Created by `race.mjs`: one `.md` scoreboard and one `.json` per run. |
 
 The race and the demos use tasks 1 (tax bug), 3 (free shipping) and 4 (retry

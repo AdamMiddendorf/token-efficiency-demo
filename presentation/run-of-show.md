@@ -1,7 +1,7 @@
 # Vibe vs. Verified — run of show and script
 
-**Session:** Token-efficient AI development with the Cursor and Claude Code CLIs
-**Audience:** Xplor engineers using the Claude Code CLI (`claude`) and the Cursor CLI (`agent`). Every demo happens in a terminal; no IDE UI.
+**Session:** Token-efficient AI development with the Claude Code CLI (the habits carry over to Cursor)
+**Audience:** Xplor engineers using the Claude Code CLI (`claude`) or Cursor. Every demo runs in Claude Code in a terminal; no IDE UI. Cursor equivalents are on backup slide 26 and the cheat sheet.
 **Length:** 60 minutes, presenter-led (attendees watch; no laptops needed)
 **Speakers:** Adam (opens, Theory 1 and 3, drives Demo 2) · Eugene (Theory 2, drives Demos 1 and 3)
 **Deck:** [`vibe-vs-verified.pptx`](vibe-vs-verified.pptx) — speaker notes on every slide; slides 26–27 are backup
@@ -50,8 +50,8 @@ touched.
 | 0:09 | **Demo 1** — vibe it (Claude Code CLI) | 8 | Eugene | Eugene | Adam narrates and tallies |
 | 0:17 | **Theory 2** — planning keeps agents on target | 9–15 | Eugene | Eugene (deck) | Adam opens `claude` in `demo2-disciplined` |
 | 0:27 | **Demo 2** — plan, save, clear, build (Claude Code CLI) | 16 | Adam | Adam | Eugene narrates and tallies |
-| 0:38 | **Theory 3** — managing context and progressive disclosure | 17–21 | Adam | Adam (deck) | Eugene opens `agent` in `demo3-cursor` |
-| 0:46 | **Demo 3** — new goal, fresh context (Cursor CLI) | 22 | Eugene | Eugene | Adam narrates; checks the race |
+| 0:38 | **Theory 3** — managing context and progressive disclosure | 17–21 | Adam | Adam (deck) | Eugene opens `claude` in `demo3-notifications` |
+| 0:46 | **Demo 3** — new goal, fresh context (Claude Code CLI) | 22 | Eugene | Eugene | Adam narrates; checks the race |
 | 0:54 | Race results, checklist, close | 23–25 | Both | Eugene (race terminal) → Adam (deck) | — |
 | 0:58 | Q&A (backup slides 26–27: tool map, model choice) | 25 | Both | — | — |
 
@@ -79,15 +79,14 @@ it entirely (optional, see `demo-kit/README.md`).
 
 - [ ] Both speakers rehearse once end-to-end, with the timer running. Demo 2 is
       the tightest block — rehearse it twice.
-- [ ] Run the race once (`node demo-kit/race.mjs`) and fill slide 23's `_` cells from
+- [ ] Run the race once (`node demo-kit/race.mjs`) and refresh slide 23's rehearsal numbers from
       `demo-kit/results/race-*.md`. That's your fallback if the live race hasn't finished.
-- [ ] Record a screen capture of Demo 1 and Demo 2 during rehearsal as backups.
-- [ ] Confirm the commands on the cheat sheet and backup slide 26 against your installed
-      versions of the Cursor CLI (`agent --version`, `/help`) and Claude Code (`claude --version`).
+- [ ] Record a screen capture of all three demos during rehearsal as backups.
+- [ ] Confirm the Claude Code commands on the cheat sheet and backup slide 26 against your
+      installed version (`claude --version`, `/help`). The Cursor column is reference only;
+      if someone in the room uses Cursor, sanity-check it against `agent --version` too.
 - [ ] In Claude Code, confirm how your version lets you decline a finished plan and stay
       in plan mode (Demo 2 step 4 depends on it).
-- [ ] Cursor CLI context %: set up a custom status line (`statusLine` in `~/.cursor/cli-config.json`,
-      reading `context_window.used_percentage`) so the room can see context the way Claude Code's `/statusline` shows it.
 - [ ] Share the cheat sheet with the organiser so it can go out right after the session.
 
 ### The day before
@@ -98,16 +97,16 @@ it entirely (optional, see `demo-kit/README.md`).
 ### 30 minutes before
 
 - [ ] `node demo-kit/stage.mjs` — creates three clean demo copies in `../../parcel-pilot-stage/`:
-      `demo1-vibe`, `demo2-disciplined`, `demo3-cursor`. These have no `workshop/`
+      `demo1-vibe`, `demo2-disciplined`, `demo3-notifications`. These have no `workshop/`
       (answers) or `verify/` (hidden checks), so the agent can't cheat.
 - [ ] **Eugene's machine:** `claude` running in `demo1-vibe`, fresh session, status
       line showing context % (`/statusline show model, context percentage and cost`).
-      A second terminal in `demo3-cursor` with `agent` ready, signed in, context % status line on.
+      A second terminal with `claude` running in `demo3-notifications`, same status line.
 - [ ] **Adam's machine:** `claude` running in `demo2-disciplined`, fresh session, same status line.
 - [ ] Both: terminal font ≥ 18pt, notifications off, `demo-kit/prompts.md` open
       in a side window for copy-paste.
 - [ ] A spare terminal for the race on whichever machine stays awake for ~15–25 minutes.
-- [ ] Same model on both Claude Code sessions as the race (default: Sonnet).
+- [ ] Same model in every demo session as the race (default: Sonnet).
 
 ---
 
@@ -226,8 +225,8 @@ prompt never mentioned them."
 > contract: build only what's in it, and if new evidence breaks it, stop and
 > re-plan instead of letting the agent improvise."
 
-Show how: **Shift+Tab** in both CLIs (Claude Code into plan mode; Cursor CLI cycles
-Agent → Plan → Ask, or `/plan`).
+Show how: **Shift+Tab** into plan mode in Claude Code. For Cursor users in the room:
+Shift+Tab cycles Agent → Plan → Ask there too, or `/plan`.
 
 *Slide 15 — plan, save, clear, build (2 min).*
 
@@ -311,29 +310,33 @@ the same session, then show `/compact keep the plan and the test results` instea
 > narrowest layer where it'll still be found. And disable MCP servers you aren't
 > using — their tool definitions load every session."
 
-Hand-off: *"New goal — notifications. Eugene, in the Cursor CLI."*
+Hand-off: *"New goal — notifications. Eugene, fresh context."*
 
 ### 0:46–0:54 · Demo 3: new goal, fresh context — slide 22 · Eugene drives, Adam narrates
 
-**Setup:** terminal in `parcel-pilot-stage/demo3-cursor`, `agent` running.
+**Setup:** `claude` in `parcel-pilot-stage/demo3-notifications`, status line visible.
 
-1. *(0:46)* "Pricing's done, now notifications. Continue, `/summarize` or `/clear`?"
-   Take an answer. "New goal — `/clear`." Then `cat AGENTS.md`: "Layer 0. About a dozen
-   lines, mostly pointers."
-2. *(0:47)* **Shift+Tab** to Plan (or `/plan`). `@` the retry policy and its test;
-   paste **disciplined-4**. Adam: "It'll read ADR 003 because the prompt points at
-   it — disclosure on demand, not preloaded."
+1. *(0:46)* "Pricing's done, now notifications. Continue, `/compact` or `/clear`?"
+   Take an answer. "New goal — `/clear`." Then `cat CLAUDE.md`: "Layer 0. About twenty
+   lines: commands, a few rules that apply to every task, and two 'read X only when Y'
+   pointers. Nothing about notifications."
+2. *(0:47)* **Shift+Tab** into plan mode. `@` the retry policy and its test; paste
+   **disciplined-4**. Adam: "It'll read ADR 003 because the prompt points at it —
+   disclosure on demand, not preloaded."
 3. *(0:49)* Read the plan. **The trap:** the constant is called `maxRetries` but holds
    *attempts*; setting it to `2` gives **one** retry. "Two retries means three
    attempts." Check its don't-touch list covers `delivery-queue.ts` and
-   `notification-log.ts`.
-4. *(0:50)* Build. `npm test -- tests/notifications`, `npm run typecheck`. Show the
-   context % status line; if it's grown, `/summarize` and point out what survived.
-5. *(0:52)* Save the lesson at **layer 2**: create `.cursor/rules/notifications.mdc`
-   (copy from `demo-kit/cursor-rule-example/notifications.mdc` if typing is slow).
-   "Scoped to `src/notifications/**`. It only loads when an agent touches those
-   files — not on every prompt like AGENTS.md."
-6. *(0:53)* Optional: `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo3-cursor 4`.
+   `notification-log.ts`. If the plan runs past 5 lines, say so — "it ignored the
+   limit; that's a review comment, not a rewrite."
+4. *(0:50)* Approve and build. `npm test -- tests/notifications`, `npm run typecheck`.
+   `/context`; if it's grown, `/compact keep only the retry-limit decision, the files
+   changed and the test results` and point out what survived.
+5. *(0:52)* Save the lesson at **layer 2**: create `.claude/rules/notifications.md`
+   (copy from `demo-kit/claude-rule-example/notifications.md` if typing is slow).
+   "The `paths:` frontmatter scopes it to `src/notifications/**`. Claude loads it only
+   when it reads or edits a file there — not on every prompt like CLAUDE.md."
+   Cursor users: the same idea is `.cursor/rules/*.mdc` with `globs` (cheat sheet).
+6. *(0:53)* Optional: `node demo-kit/verify.mjs ../../parcel-pilot-stage/demo3-notifications 4`.
 
 > Eugene: "Adam — how's the race?"
 
@@ -366,7 +369,7 @@ then tokens, peak context and cost, then files read and unrelated changes.
 | "Doesn't /clear lose everything?" | It loses the transcript, not the work. Code, tests, docs, git and the plan file are the memory. |
 | "Compact or clear?" | Same goal → compact (say what to keep). New goal or wrong path → clear (or rewind). |
 | "What goes in CLAUDE.md / AGENTS.md?" | About one screen: commands, a few non-negotiables, pointers with conditions ("read X only when Y"). Everything else goes in a deeper layer. |
-| "Cursor CLI or Claude Code?" | Either; the moves are the same (backup slide 26). Don't compare usage numbers across tools — compare your own before and after. |
+| "Does this work in Cursor?" | Yes. We demoed Claude Code, but every move has a Cursor equivalent (backup slide 26, cheat sheet). Don't compare usage numbers across tools — compare your own before and after. |
 | "Which model should I default to?" | Backup slide 27. The normal coding model; escalate on evidence. |
 
 ---

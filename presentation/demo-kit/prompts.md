@@ -5,7 +5,7 @@ Copy-paste source for all three demos, and the prompts `race.mjs` sends. The
 keep the markers.
 
 All paths are relative to the demo copy (for example `parcel-pilot-stage/demo2-disciplined`).
-In either CLI you can type `@` and pick the file instead of pasting the path, so
+In Claude Code you can type `@` and pick the file instead of pasting the path, so
 it is attached rather than searched for.
 
 ---
@@ -93,11 +93,10 @@ Run `/context`, then `/clear`, then `/context` again (the drop is the point), th
 Implement plans/free-shipping.md. Stay inside its file list and don't-touch list. Run its verification commands and report only what changed and the test results.
 ```
 
-### Task 4 — notification retries (Demo 3 · Cursor CLI, fresh session, Plan mode)
+### Task 4 — notification retries (Demo 3 · fresh session, plan mode)
 
-Cursor CLI: run `agent` (or `/clear`), **Shift+Tab** to Plan (or `/plan`), attach the three files with `@`.
-Paste the prompt into the interactive session. On Windows, `agent.cmd -p "..."` passes only
-the first line of a multi-line prompt, so the agent never sees the definition or constraints.
+Claude Code: `/clear`, then **Shift+Tab** until the footer shows *plan mode*. Type `@` and
+attach the retry policy and its test, then paste the prompt.
 
 <!-- prompt:disciplined-4 -->
 ```text

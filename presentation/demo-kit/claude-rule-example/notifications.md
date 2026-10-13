@@ -1,8 +1,10 @@
 ---
-description: Notification retry semantics - use when changing delivery retries, attempts or backoff
-globs: src/notifications/**,tests/notifications/**
-alwaysApply: false
+paths:
+  - "src/notifications/**"
+  - "tests/notifications/**"
 ---
+
+# Notification retries
 
 - A retry is an attempt AFTER the initial one: N retries = N + 1 attempts (ADR 003).
 - `retry-policy.ts` decides WHETHER to retry and owns the limit; `delivery-queue.ts` only decides WHEN.

@@ -103,9 +103,9 @@ section("Open");
 {
   const s = slide("TITLE_DARK");
   s.addText("Vibe vs. Verified", { placeholder: "title" });
-  s.addText("Token-efficient AI development with the Cursor and Claude Code CLIs", { placeholder: "subtitle" });
+  s.addText("Token-efficient AI development with Claude Code (and Cursor)", { placeholder: "subtitle" });
   s.addText("Adam & Eugene  ·  60-minute live session", { placeholder: "byline" });
-  s.addNotes("ADAM. Welcome. 60 minutes, no laptops needed - we drive, you watch and heckle. We alternate theory and live demos four times so nobody sits through 30 minutes of slides. Promise: everything we show is in the terminal - the Claude Code CLI and the Cursor CLI - and works the same in both, and there is a one-page cheat sheet at the end.");
+  s.addNotes("ADAM. Welcome. 60 minutes, no laptops needed - we drive, you watch and heckle. We alternate theory and live demos four times so nobody sits through 30 minutes of slides. Promise: every demo is live in the Claude Code CLI, and every habit works the same in Cursor - the Cursor equivalents are on the cheat sheet you get at the end.");
 }
 
 // 2 — the race
@@ -145,7 +145,7 @@ section("Open");
     ["0:17", "THEORY", "Planning keeps agents on target", "Eugene"],
     ["0:27", "DEMO", "Plan, save, clear, build", "Adam drives"],
     ["0:38", "THEORY", "Managing context and progressive disclosure", "Adam"],
-    ["0:46", "DEMO", "New goal, fresh context, in the Cursor CLI", "Eugene drives"],
+    ["0:46", "DEMO", "New goal, fresh context", "Eugene drives"],
     ["0:54", "DEMO", "Race results and takeaways", "Both"],
   ];
   rows.forEach((r, i) => {
@@ -580,7 +580,7 @@ section("Theory 3 - Context");
   const layers = [
     ["0", "Always loaded", "CLAUDE.md / AGENTS.md: commands, non-negotiables, pointers", "every turn · ~1 screen", PURPLE, 4.6],
     ["1", "Routing map", "docs/architecture.md: which file owns what", "when locating code", VIOLET, 5.7],
-    ["2", "Scoped rules", ".cursor/rules with globs · nested CLAUDE.md", "when matching files are touched", TEAL, 6.8],
+    ["2", "Scoped rules", ".claude/rules + paths · nested CLAUDE.md · .cursor/rules", "when matching files are touched", TEAL, 6.8],
     ["3", "Deep docs", "Decision records, runbooks, skills, specs", "only when changing that rule", SLATE, 7.9],
   ];
   layers.forEach(([n, h, what, when, c, w], i) => {
@@ -657,23 +657,23 @@ section("Theory 3 - Context");
   ];
   s.addTable(rows, { x: 5.6, y: 1.85, w: 7.0, colW: [3.4, 3.6], fontSize: 15, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.62, valign: "middle", margin: [0.04, 0.14, 0.04, 0.14], objectName: "knowledge table" });
   text(s, "After a bad session, resist \"add it to CLAUDE.md\". Find the narrowest layer where it will still be found.", { x: 5.6, y: 5.8, w: 7.0, h: 0.6, fontSize: 15, color: SLATE });
-  s.addNotes("ADAM. The instinct after a bad session is 'add it to CLAUDE.md'. Do that for a year and every prompt carries thousands of tokens of folklore. Use the layers. Eugene's going to show the whole thing in the Cursor CLI: a new goal, a fresh context, and a lesson saved as a scoped rule.");
+  s.addNotes("ADAM. The instinct after a bad session is 'add it to CLAUDE.md'. Do that for a year and every prompt carries thousands of tokens of folklore. Use the layers. Eugene's going to show the whole thing: a new goal, a fresh context, and a lesson saved as a scoped rule.");
 }
 
 // =====================================================================
-section("Demo 3 - Cursor CLI");
+section("Demo 3 - Fresh context");
 // 19 — demo 3
 {
   const s = slide("DEMO_DARK");
   chip(s, "LIVE DEMO 3 · EUGENE", true);
   s.addText("Demo 3 · New goal, fresh context", { placeholder: "title" });
-  s.addText("Cursor CLI (agent) · the subject changes from pricing to notifications", { placeholder: "subtitle" });
+  s.addText("Claude Code CLI · the subject changes from pricing to notifications", { placeholder: "subtitle" });
   const steps = [
-    ["1", "New goal, so /clear. Show AGENTS.md: a few lines, mostly pointers."],
-    ["2", "Shift+Tab to Plan. @ the retry policy and its test; the prompt points at ADR 003."],
+    ["1", "New goal, so /clear. Show CLAUDE.md: short, and nothing about notifications."],
+    ["2", "Shift+Tab into plan mode. @ the retry policy and its test; the prompt points at ADR 003."],
     ["3", "Spot the trap: two retries means three attempts. Did the plan get it right?"],
-    ["4", "Build. Narrow test, typecheck, hidden verification. /summarize if it got long."],
-    ["5", "Save the lesson at layer 2: a scoped rule, not AGENTS.md."],
+    ["4", "Build. Narrow test, typecheck, hidden verification. /compact if it got long."],
+    ["5", "Save the lesson at layer 2: a path-scoped rule, not CLAUDE.md."],
   ];
   steps.forEach(([n, t], i) => {
     const y = 2.5 + i * 0.86;
@@ -681,19 +681,18 @@ section("Demo 3 - Cursor CLI");
     text(s, t, { x: 1.4, y: y + 0.02, w: 6.0, h: 0.75, fontSize: 16, color: WHITE });
   });
   panel(s, 7.75, 2.5, 4.85, 4.2, C.text1);
-  text(s, "THE SCOPED RULE", { x: 8.05, y: 2.75, w: 4.3, h: 0.3, fontSize: 12, bold: true, charSpacing: 1, color: AQUA });
+  text(s, ".claude/rules/notifications.md", { x: 8.05, y: 2.75, w: 4.3, h: 0.3, fontSize: 12, bold: true, color: AQUA });
   text(s, [
     "---",
-    "description: Notification retry",
-    "  semantics",
-    "globs: src/notifications/**",
-    "alwaysApply: false",
+    "paths:",
+    "  - \"src/notifications/**\"",
+    "  - \"tests/notifications/**\"",
     "---",
     "- A retry is an attempt AFTER",
     "  the initial one: N retries",
     "  = N + 1 attempts (ADR 003)",
   ].join("\n").replace(/^ +/gm, (m) => " ".repeat(m.length)), { x: 8.05, y: 3.15, w: 4.3, h: 3.4, fontFace: MONO, fontSize: 14, color: MIST });
-  s.addNotes("EUGENE drives the Cursor CLI (`agent`) in parcel-pilot-stage/demo3-cursor, ADAM narrates. Step 1: cat AGENTS.md so the room sees layer 0 is tiny. Step 2: point out the agent reads ADR 003 because the prompt pointed at it - progressive disclosure on demand, not preloaded. The decoys: delivery-queue.ts (when to retry) and notification-log.ts (audit). The trap: the constant is named maxRetries but holds the attempt count - changing it to 2 gives ONE retry. Step 5: create .cursor/rules/notifications.mdc (copy from demo-kit/cursor-rule-example if short on time) - it loads only when the agent touches src/notifications/**. Then: 'Adam, how's the race?'");
+  s.addNotes("EUGENE drives the Claude Code CLI in parcel-pilot-stage/demo3-notifications, ADAM narrates. Step 1: cat CLAUDE.md so the room sees layer 0 is short and says nothing about notifications. Step 2: point out the agent reads ADR 003 because the prompt pointed at it - progressive disclosure on demand, not preloaded. The decoys: delivery-queue.ts (when to retry) and notification-log.ts (audit). The trap: the constant is named maxRetries but holds the attempt count - changing it to 2 gives ONE retry. Step 5: create .claude/rules/notifications.md (copy from demo-kit/claude-rule-example if short on time). The paths: frontmatter means Claude loads it only when it reads or edits a matching file. Cursor users: same idea as .cursor/rules/*.mdc with globs. Then: 'Adam, how's the race?'");
 }
 
 // =====================================================================
@@ -769,7 +768,7 @@ section("Backup");
   const s = slide("CONTENT");
   chip(s, "BACKUP");
   s.addText("Same habits, two CLIs", { placeholder: "title" });
-  s.addText("claude or agent - use whichever you like. The moves are the same.", { placeholder: "subtitle" });
+  s.addText("We demo in claude. If you use Cursor, every move has an equivalent.", { placeholder: "subtitle" });
   const hdr = (t) => ({ text: t, options: { bold: true, color: WHITE, fill: { color: PURPLE } } });
   const b = (t) => ({ text: t, options: { bold: true } });
   const m = (t) => ({ text: t, options: { fontFace: MONO } });
@@ -782,10 +781,10 @@ section("Backup");
     [b("New goal"), m("/clear"), m("/clear  (/new-chat)")],
     [b("Undo a wrong turn"), "Esc Esc · /rewind", "/rewind · Ctrl+R to review changes"],
     [b("Right model for the job"), m("/model"), m("/model")],
-    [b("Keep lessons, scoped"), "CLAUDE.md (one screen) + docs", m(".cursor/rules/*.mdc + globs")],
+    [b("Keep lessons, scoped"), m(".claude/rules/*.md + paths:"), m(".cursor/rules/*.mdc + globs")],
   ];
   s.addTable(rows, { x: 0.7, y: 1.8, w: 11.9, colW: [3.1, 4.2, 4.6], fontSize: 14, color: INK, border: { type: "solid", pt: 1, color: LINE }, rowH: 0.52, valign: "middle", margin: [0.03, 0.14, 0.03, 0.14], objectName: "tool map" });
-  s.addNotes("EUGENE. This table is on the cheat sheet, so don't photograph it. Point out: both tools have plan mode, both have mentions, both have compaction and a reset. Adam uses the Claude Code CLI for the next demo; I'll do the last one in the Cursor CLI (agent). Over to Adam.");
+  s.addNotes("EUGENE. This table is on the cheat sheet, so don't photograph it. Point out: both tools have plan mode, both have mentions, both have compaction and a reset. We demo in Claude Code; if you use Cursor, every move we made has a column here.");
 }
 
 // =====================================================================

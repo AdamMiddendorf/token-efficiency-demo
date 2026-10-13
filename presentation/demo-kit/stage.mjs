@@ -13,7 +13,7 @@ const root = resolve(process.argv[2] ?? join(KIT_DIR, "..", "..", "..", "parcel-
 const lanes = {
   "demo1-vibe": "Demo 1 - Eugene, Claude Code: the vibe-coding session",
   "demo2-disciplined": "Demo 2 - Adam, Claude Code: the disciplined loop",
-  "demo3-cursor": "Demo 3 - Eugene, Cursor CLI (agent): new goal, new chat",
+  "demo3-notifications": "Demo 3 - Eugene, Claude Code: new goal, fresh context",
 };
 
 for (const [name, purpose] of Object.entries(lanes)) {

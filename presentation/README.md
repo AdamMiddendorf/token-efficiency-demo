@@ -1,7 +1,7 @@
 # Vibe vs. Verified — presentation
 
 A 60-minute presenter-led session on token-efficient AI development with the
-Claude Code CLI and the Cursor CLI, built on the `parcel-pilot` repo. It
+Claude Code CLI (with Cursor equivalents), built on the `parcel-pilot` repo. It
 alternates theory and live demos around two themes: planning keeps an agent on
 target, and managing context keeps it cheap.
 
